@@ -1,18 +1,18 @@
 /**
- * Mr.IF 蝴蝶效应推理引擎 — 合一工具
+ * Mr.IF Butterfly-Effect Reasoning Engine — Unified Tool
  *
- * 一次调用，完成全部推理前置工作：
- * 1. 事件分类 + 推理方向 (原 butterfly_analyze)
- * 2. 链条模板匹配 + 构建指引 (原 causal_chain_build)
- * 3. 验证框架 + 评分规则 (原 chain_validate 的框架部分)
- * 4. 历史先例搜索 (原 historical_echo)
- * 5. 汇合分析规则 (原 chain_confluence 的规则部分)
+ * One call returns the complete reasoning scaffold:
+ * 1. Event classification + reasoning directions
+ * 2. Chain template matching + building guidance
+ * 3. Validation framework + scoring rubric
+ * 4. Historical precedent search (15 cases)
+ * 5. Confluence analysis rules
  *
- * LLM 拿到这个工具的返回后，在 thinking 中完成：
- * - 填充链条步骤
- * - 自行打分验证
- * - 汇合分析
- * 然后再调用外部工具（行业映射、证券映射、取数等）
+ * After receiving this tool's output, the LLM completes in its thinking:
+ * - Fill in chain steps using templates
+ * - Self-score and validate
+ * - Confluence analysis
+ * Then calls external tools (industry mapper, security mapper, data API, etc.)
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -146,114 +146,114 @@ const CHAIN_TEMPLATES: Record<string, {
   triggers: string[];
 }> = {
   symptom_to_pharma: {
-    name: "症状→医药产业链",
-    pattern: "身体症状 → 疾病分类 → 患病人群规模 → 药物/治疗需求 → 医药公司业绩",
-    disciplines: ["生理学", "流行病学", "经济学"],
+    name: "Symptom → Pharma Supply Chain",
+    pattern: "Body symptom → Disease classification → Affected population scale → Drug/treatment demand → Pharma company earnings",
+    disciplines: ["Physiology", "Epidemiology", "Economics"],
     typical_steps: 4,
     triggers: ["打喷嚏", "咳嗽", "失眠", "头疼", "发烧", "sneeze", "cough", "flu", "sick"],
   },
   weather_to_energy: {
-    name: "天气→能源/大宗商品",
-    pattern: "天气变化 → 能源需求变化 → 大宗商品供需 → 能源/化工企业利润",
-    disciplines: ["物理学", "气象学", "经济学"],
+    name: "Weather → Energy / Commodities",
+    pattern: "Weather change → Energy demand shift → Commodity supply-demand → Energy/chemical company margins",
+    disciplines: ["Physics", "Meteorology", "Economics"],
     typical_steps: 4,
     triggers: ["降温", "高温", "暴雨", "干旱", "cold", "hot", "freeze", "heatwave"],
   },
   consumption_to_industry: {
-    name: "消费观察→行业趋势",
-    pattern: "消费现象 → 背后驱动力 → 行业增长/衰退 → 行业龙头股",
-    disciplines: ["社会学", "心理学", "经济学"],
+    name: "Consumer Observation → Industry Trend",
+    pattern: "Consumption pattern → Underlying driver → Industry growth/decline → Sector leaders",
+    disciplines: ["Sociology", "Psychology", "Economics"],
     typical_steps: 4,
     triggers: ["咖啡", "外卖", "排队", "商场", "coffee", "delivery", "traffic"],
   },
   emotion_to_capital: {
-    name: "社会情绪→资金流向",
-    pattern: "社会情绪 → 群体行为变化 → 消费/投资偏好 → 资金流向",
-    disciplines: ["心理学", "行为经济学", "金融学"],
+    name: "Social Sentiment → Capital Flow",
+    pattern: "Social mood → Group behavior change → Spending/investment preference shift → Capital reallocation",
+    disciplines: ["Psychology", "Behavioral Economics", "Finance"],
     typical_steps: 4,
     triggers: ["焦虑", "恐慌", "乐观", "躺平", "fear", "panic", "FOMO", "anxiety"],
   },
   policy_to_industry: {
-    name: "政策信号→产业调整",
-    pattern: "政策动向 → 行业准入变化 → 产业结构调整 → 受益/受损企业",
-    disciplines: ["政治学", "法学", "经济学"],
+    name: "Policy Signal → Industry Restructuring",
+    pattern: "Policy direction → Market access change → Industry restructuring → Winners/losers",
+    disciplines: ["Political Science", "Law", "Economics"],
     typical_steps: 4,
     triggers: ["禁令", "补贴", "碳中和", "ban", "subsidy", "regulation", "tariff", "executive order"],
   },
   tech_to_revolution: {
-    name: "技术突破→产业革命",
-    pattern: "技术进展 → 成本/效率变化 → 产业格局重构 → 价值重估",
-    disciplines: ["工程学", "物理学", "经济学"],
+    name: "Tech Breakthrough → Industry Revolution",
+    pattern: "Technology advance → Cost/efficiency shift → Industry landscape reshuffle → Valuation re-rating",
+    disciplines: ["Engineering", "Physics", "Economics"],
     typical_steps: 5,
     triggers: ["AI", "电池", "芯片", "量子", "ChatGPT", "chip", "quantum"],
   },
   disaster_to_supply: {
-    name: "灾害→供应链→替代需求",
-    pattern: "突发事件 → 供应链中断 → 替代品需求 → 替代供应商受益",
-    disciplines: ["地理学", "物流学", "经济学"],
+    name: "Disaster → Supply Chain → Substitute Demand",
+    pattern: "Black swan event → Supply chain disruption → Substitute demand surge → Alternative supplier benefits",
+    disciplines: ["Geography", "Logistics", "Economics"],
     typical_steps: 4,
     triggers: ["地震", "台风", "疫情", "贸易战", "earthquake", "pandemic", "trade war"],
   },
   health_to_wellness: {
-    name: "健康心理→大健康消费",
-    pattern: "身体信号 → 健康意识觉醒 → 保健消费意愿 → 大健康产业",
-    disciplines: ["生理学", "心理学", "消费经济学"],
+    name: "Health Signal → Wellness Economy",
+    pattern: "Body signal → Health awareness → Wellness spending intent → Health & wellness industry",
+    disciplines: ["Physiology", "Psychology", "Consumer Economics"],
     typical_steps: 4,
     triggers: ["打喷嚏", "体检", "亚健康", "熬夜", "sneeze", "health check", "fatigue"],
   },
   geopolitical_to_safehaven: {
-    name: "地缘冲突→避险资产",
-    pattern: "地缘事件 → 市场恐慌(VIX↑) → 资金避险 → 黄金/国债/美元↑",
-    disciplines: ["地缘政治", "心理学", "金融学"],
+    name: "Geopolitical Conflict → Safe Haven Assets",
+    pattern: "Geopolitical event → Market panic (VIX↑) → Flight to safety → Gold/Treasuries/USD↑",
+    disciplines: ["Geopolitics", "Psychology", "Finance"],
     typical_steps: 3,
     triggers: ["war", "conflict", "sanction", "missile", "NATO", "trump", "特朗普", "战争", "冲突", "制裁"],
   },
   geopolitical_to_supply: {
-    name: "地缘冲突→供应链断裂→替代供应商",
-    pattern: "制裁/冲突 → 某国供给中断 → 大宗商品暴涨 → 替代供应商受益",
-    disciplines: ["地缘政治", "供应链", "经济学"],
+    name: "Geopolitical Conflict → Supply Chain Disruption → Alt Suppliers",
+    pattern: "Sanctions/conflict → Country supply cutoff → Commodity spike → Alternative supplier benefits",
+    disciplines: ["Geopolitics", "Supply Chain", "Economics"],
     typical_steps: 4,
     triggers: ["tariff", "sanction", "embargo", "trade war", "China", "Russia", "关税", "封锁"],
   },
   supply_chain_bottleneck: {
-    name: "供应链瓶颈→定价权→利润暴增",
-    pattern: "某环节产能紧张 → 无替代 → 极端定价权 → 毛利率飙升",
-    disciplines: ["供应链", "工程学", "经济学"],
+    name: "Supply Chain Bottleneck → Pricing Power → Margin Explosion",
+    pattern: "Capacity constraint at one node → No substitutes → Extreme pricing power → Gross margin surge",
+    disciplines: ["Supply Chain", "Engineering", "Economics"],
     typical_steps: 4,
     triggers: ["shortage", "bottleneck", "GPU", "chip", "缺货", "产能"],
   },
   event_to_fed_rotation: {
-    name: "经济数据→Fed政策预期→板块轮动",
-    pattern: "经济数据/事件 → 改变Fed加息/降息预期 → 利率敏感行业轮动",
-    disciplines: ["经济学", "货币政策", "金融学"],
+    name: "Economic Data → Fed Policy Expectation → Sector Rotation",
+    pattern: "Economic data/event → Shifts Fed hike/cut expectations → Rate-sensitive sector rotation",
+    disciplines: ["Economics", "Monetary Policy", "Finance"],
     typical_steps: 4,
     triggers: ["CPI", "inflation", "jobs", "unemployment", "Fed", "rate", "通胀", "就业", "利率"],
   },
   second_order_hidden: {
-    name: "一阶推理→二阶预期差→隐藏赢家",
-    pattern: "明显事件 → 直觉赢家(已price in) → 寻找隐藏赢家/输家",
-    disciplines: ["心理学", "市场传导", "二阶思维"],
+    name: "First-Order → Second-Order Expectation Gap → Hidden Winners",
+    pattern: "Obvious event → Consensus winner (already priced in) → Find hidden winners/losers",
+    disciplines: ["Psychology", "Market Mechanics", "Second-Order Thinking"],
     typical_steps: 5,
     triggers: ["obvious", "everyone knows", "consensus", "price in", "所有人都知道"],
   },
   tech_pickaxe: {
-    name: "科技范式→卖铲人链",
-    pattern: "技术爆发 → 应用需求暴增 → 基础设施瓶颈 → 基础设施供应商受益最大",
-    disciplines: ["工程学", "供应链", "经济学"],
+    name: "Tech Paradigm → Pick-and-Shovel Play",
+    pattern: "Tech explosion → Application demand surge → Infra bottleneck → Infra supplier benefits most",
+    disciplines: ["Engineering", "Supply Chain", "Economics"],
     typical_steps: 5,
     triggers: ["AI", "ChatGPT", "data center", "cloud", "GPU", "算力", "数据中心"],
   },
   demographic_to_sector: {
-    name: "人口结构→行业变迁",
-    pattern: "人口趋势 → 需求结构变化 → 行业兴衰 → 长期投资方向",
-    disciplines: ["社会学", "人口学", "经济学"],
+    name: "Demographics → Sector Transformation",
+    pattern: "Population trend → Demand structure shift → Industry rise/decline → Long-term investment direction",
+    disciplines: ["Sociology", "Demography", "Economics"],
     typical_steps: 5,
     triggers: ["aging", "老龄化", "Gen Z", "millennial", "retirement", "birth rate"],
   },
   environment_to_greentech: {
-    name: "环境问题→绿色科技",
-    pattern: "环境恶化 → 政策收紧 → 环保投入增加 → 绿色科技企业",
-    disciplines: ["化学", "环境科学", "经济学"],
+    name: "Environmental Issue → Green Tech",
+    pattern: "Environmental degradation → Policy tightening → Green investment increase → Clean tech companies",
+    disciplines: ["Chemistry", "Environmental Science", "Economics"],
     typical_steps: 4,
     triggers: ["雾霾", "碳排放", "塑料", "pollution", "carbon", "wildfire", "山火"],
   },
@@ -306,51 +306,51 @@ interface HistCase {
 }
 
 const CASES: HistCase[] = [
-  { id: "covid-2020", title: "COVID-19: 一场肺炎引发的全球市场海啸", year: 2020, trigger: "武汉出现不明原因肺炎",
-    chain_summary: "地方疫情→全球大流行→封锁→暴跌→放水→科技股暴涨", steps: ["不明肺炎(流行病学)","人传人→全球扩散","各国封锁→经济停摆","S&P500跌34%(恐慌)","Fed零利率+无限QE","WFH爆发→Zoom/AMZN暴涨","mRNA疫苗→MRNA/BNTX飙升"],
-    disciplines: ["流行病学","心理学","货币经济学"], outcome: "SPY从339跌至218再反弹至373; MRNA从19涨至157", tickers: ["SPY","MRNA","ZM","AMZN","PFE"], sector: "pharma,tech", magnitude: "extreme", time_to_impact: "2-4周暴跌,6-12月反弹", lesson: "极端事件中看谁是危机受益者", tags: ["pandemic","flu","virus","sneeze","cough","health","lockdown","Fed","疫情","新冠","肺炎","封锁","感冒","咳嗽","打喷嚏","病毒","口罩","居家","生病"] },
-  { id: "texas-freeze-2021", title: "德州暴风雪: 冰冻引发能源危机", year: 2021, trigger: "德州遭遇罕见极寒",
-    chain_summary: "极寒→供暖暴增→电网崩溃→天然气飙升→能源股暴涨", steps: ["极地涡旋南下-18°C(气象学)","供暖需求暴增400%","风电冻结+管道冻堵(工程)","ERCOT电网崩溃430万户停电","天然气现货$400/MMBtu","能源股飙升"],
-    disciplines: ["气象学","物理学","工程学","经济学"], outcome: "UNG一周涨12%; OXY涨15%", tickers: ["UNG","OXY","XOM","LNG"], sector: "energy", magnitude: "large", time_to_impact: "即时到2周", lesson: "极端天气对能源冲击即时且剧烈", tags: ["cold","freeze","snow","weather","energy","gas","heating","power grid","寒潮","降温","极寒","暴雪","冰冻","天然气","能源","停电","冷","暴风雪","寒流"] },
-  { id: "hurricane-katrina-2005", title: "卡特里娜飓风: 风暴到油价飙升", year: 2005, trigger: "5级飓风登陆墨西哥湾",
-    chain_summary: "飓风→石油平台关停→汽油短缺→油价飙升", steps: ["5级飓风(气象)","墨西哥湾95%产能关停","炼油厂受损","汽油$3+/加仑","原油$70+/桶","保险巨额赔付"],
-    disciplines: ["气象学","工程学","经济学"], outcome: "WTI从$60涨至$70+; HD/LOW灾后重建受益", tickers: ["USO","XLE","HD","LOW","ALL"], sector: "energy,industrials", magnitude: "large", time_to_impact: "即时到数月", lesson: "飓风季关注墨西哥湾产能+灾后重建", tags: ["hurricane","storm","flood","oil","energy","insurance","rebuild","飓风","暴风","洪水","石油","能源","保险","重建","台风","暴雨"] },
-  { id: "russia-ukraine-2022", title: "俄乌冲突: 重塑全球能源版图", year: 2022, trigger: "俄罗斯入侵乌克兰",
-    chain_summary: "战争→制裁→能源危机→通胀→加息→成长股暴跌", steps: ["俄全面入侵(地缘)","西方全面制裁","俄断供天然气→欧洲危机","油价$120+","CPI 9.1%","Fed加息至5%+","NASDAQ跌33%"],
-    disciplines: ["地缘政治","经济学","货币政策"], outcome: "XLE涨65%; LMT涨37%; QQQ跌33%", tickers: ["XLE","LMT","RTX","GLD","QQQ"], sector: "energy,defense", magnitude: "extreme", time_to_impact: "即时到1-2年", lesson: "地缘冲击:第一波避险,第二波供应链,第三波通胀→加息", tags: ["war","conflict","Russia","oil","gas","inflation","Fed","defense","sanction","俄乌","战争","冲突","制裁","石油","天然气","通胀","加息","国防","地缘"] },
-  { id: "trade-war-2018", title: "中美贸易战: 关税阴影下的科技脱钩", year: 2018, trigger: "美国对中国加征关税",
-    chain_summary: "关税→供应链不确定→科技承压→避险", steps: ["$250B商品加征25%关税","中国反制","PMI下滑","半导体/苹果受威胁","VIX飙升","避险资金流入国债"],
-    disciplines: ["国际贸易","产业链","心理学"], outcome: "SPY Q4跌20%; AAPL跌39%; SMH跌25%", tickers: ["SPY","AAPL","SMH","TLT","GLD"], sector: "tech,macro", magnitude: "large", time_to_impact: "即时到数月", lesson: "关税打击全球化受益者,推动供应链多元化", tags: ["tariff","trade war","China","supply chain","semiconductor","trump","特朗普","贸易战","关税","中美","中国","供应链","半导体","芯片"] },
-  { id: "fed-pivot-2023", title: "美联储转向: 一句话点燃牛市", year: 2023, trigger: "Fed暗示2024年可能降息",
-    chain_summary: "Fed鸽派→利率见顶→成长股估值修复→Mag7暴涨", steps: ["Powell暗示加息结束","10Y从5%降至3.8%","DCF折现率↓→成长股↑","AI叙事叠加→Mag7暴涨"],
-    disciplines: ["货币政策","金融学","心理学"], outcome: "QQQ涨54%; NVDA涨239%", tickers: ["QQQ","NVDA","META","TLT"], sector: "tech,macro", magnitude: "large", time_to_impact: "数天启动,持续数月", lesson: "Don't fight the Fed. 利率方向决定成长vs价值", tags: ["Fed","rate","pivot","dovish","growth","tech","bond","美联储","降息","利率","鸽派","科技股","成长股","债券"] },
-  { id: "chatgpt-2022", title: "ChatGPT发布: AI从论文走向大众", year: 2022, trigger: "OpenAI发布ChatGPT,两月破亿",
-    chain_summary: "ChatGPT→AI军备竞赛→GPU供不应求→NVDA暴涨", steps: ["ChatGPT发布全民体验","企业布局AI算力竞赛","NVIDIA GPU供不应求","NVDA营收翻倍","AI基础设施跟涨"],
-    disciplines: ["计算机科学","经济学","产业链"], outcome: "NVDA涨240%; MSFT涨57%; META涨194%", tickers: ["NVDA","MSFT","META","AMD","SMH"], sector: "tech", magnitude: "extreme", time_to_impact: "1-3月概念,6-12月业绩兑现", lesson: "范式级技术突破最大受益者是卖铲人(基础设施)", tags: ["AI","ChatGPT","GPU","semiconductor","NVIDIA","data center","人工智能","芯片","算力","数据中心","英伟达","半导体"] },
-  { id: "gme-2021", title: "GameStop逼空: 散户vs华尔街", year: 2021, trigger: "Reddit WSB集体买入GME",
-    chain_summary: "社交媒体→散户集体买入→空头爆仓→GME涨100倍", steps: ["DFV在Reddit发分析","Melvin 140%做空","散户集体买入short squeeze","GME从$4到$483","Robinhood限制买入","SEC介入"],
-    disciplines: ["行为金融","传播学","博弈论"], outcome: "GME从$4涨至$483; AMC从$2涨至$72", tickers: ["GME","AMC","HOOD"], sector: "consumer,financials", magnitude: "large", time_to_impact: "1-2周高波动", lesson: "社交媒体时代散户集体行动可成市场力量", tags: ["meme","Reddit","short squeeze","retail","social media","GameStop","散户","逼空","社交媒体","投机","韭菜","割韭菜"] },
-  { id: "fed-hike-2022", title: "2022暴力加息: 40年最快加息杀估值", year: 2022, trigger: "CPI飙至9.1%,Fed暴力加息",
-    chain_summary: "通胀失控→暴力加息→成长股暴跌→价值/能源跑赢", steps: ["后疫情需求爆发+供应链瓶颈→CPI 9.1%","Fed从0%加至5.25%","10Y从1.5%飙至4.2%","ARKK跌67%","价值/能源股跑赢"],
-    disciplines: ["货币政策","宏观经济","金融学"], outcome: "ARKK跌67%; QQQ跌33%; XLE涨65%", tickers: ["ARKK","QQQ","XLE","TLT"], sector: "tech,energy,macro", magnitude: "extreme", time_to_impact: "全年持续", lesson: "利率是所有资产定价的锚", tags: ["Fed","rate hike","inflation","CPI","growth","value","rotation","美联储","加息","通胀","通货膨胀","利率","涨价","物价"] },
-  { id: "btc-etf-2024", title: "比特币ETF获批: 加密进入主流", year: 2024, trigger: "SEC批准首批比特币现货ETF",
-    chain_summary: "ETF获批→机构资金涌入→BTC破$70K→矿业/交易所暴涨", steps: ["SEC批准11只BTC ETF","IBIT首月吸金$4B+","BTC从$42K涨至$73K","MARA/RIOT矿业暴涨","COIN交易量飙升"],
-    disciplines: ["金融监管","经济学","金融学"], outcome: "BTC从$42K涨至$73K; MARA涨120%; COIN涨60%", tickers: ["IBIT","COIN","MARA","MSTR"], sector: "financials,tech", magnitude: "large", time_to_impact: "即时到3-6月", lesson: "监管从阻力变催化剂是最强买入信号", tags: ["bitcoin","crypto","ETF","SEC","regulation","mining","比特币","加密货币","监管","数字货币"] },
-  { id: "ozempic-2023", title: "GLP-1减肥药: 产业链地震", year: 2023, trigger: "Ozempic/Wegovy减肥效果走红",
-    chain_summary: "减肥药爆火→LLY/NVO暴涨→零食/医疗器械预期下调", steps: ["GLP-1减重15-20%(药理学)","社交媒体/名人效应→全民求药","LLY/NVO市值飙升","减肥→零食需求↓","胃旁路/睡眠呼吸机需求↓","WMT证实购物篮变化"],
-    disciplines: ["药理学","心理学","消费行为学"], outcome: "LLY从$330涨至$800+; DXCM跌40%", tickers: ["LLY","NVO","MDLZ","DXCM"], sector: "pharma,consumer", magnitude: "large", time_to_impact: "3-6月概念,12-24月传导", lesson: "颠覆性疗法重塑整个消费链,找二阶影响", tags: ["drug","obesity","weight loss","GLP-1","health","food","pharma","减肥","减肥药","肥胖","健康","医药","零食"] },
-  { id: "suez-2021", title: "长赐号搁浅: 一艘船堵住全球贸易", year: 2021, trigger: "集装箱船在苏伊士运河搁浅",
-    chain_summary: "运河堵塞→航运中断→运费飙升→通胀压力", steps: ["400米巨轮侧向搁浅","每天$9.6B贸易被阻断","集装箱运费飙升","欧洲进口延迟","通胀预期上升"],
-    disciplines: ["物理学","经济学","物流学"], outcome: "ZIM/MATX涨; 油价短期涨", tickers: ["ZIM","MATX","USO"], sector: "industrials,energy", magnitude: "medium", time_to_impact: "即时到数月", lesson: "全球贸易咽喉出问题→航运股暴涨→通胀传导", tags: ["supply chain","shipping","logistics","trade","inflation","供应链","航运","物流","运费","运河","通胀","堵塞"] },
-  { id: "svb-2023", title: "硅谷银行倒闭: 48小时银行挤兑", year: 2023, trigger: "SVB宣布出售债券亏损$1.8B",
-    chain_summary: "SVB亏损→社交媒体传播→挤兑→倒闭→区域银行恐慌", steps: ["SVB长期国债浮亏(金融)","社交媒体疯传(传播学)","单日挤兑$42B","FDIC接管","恐慌蔓延→First Republic倒","KRE暴跌30%","资金涌入大银行JPM"],
-    disciplines: ["金融学","心理学","传播学"], outcome: "KRE跌30%; JPM逆势涨; GLD涨10%", tickers: ["KRE","JPM","GLD","TLT"], sector: "financials,safe_haven", magnitude: "large", time_to_impact: "即时到数月", lesson: "社交媒体时代挤兑速度100倍,区分飞机和堡垒", tags: ["bank","crisis","panic","fear","deposit","regional bank","safe haven","银行","危机","挤兑","恐慌","存款","倒闭"] },
-  { id: "drought-2012", title: "2012美国大旱: 玉米带变火焰带", year: 2012, trigger: "美国中西部50年最严重干旱",
-    chain_summary: "干旱→玉米/大豆减产→农产品暴涨→饲料成本↑→肉类涨价", steps: ["极端干旱(气象)","产量大幅下调","玉米从$5涨至$8.3","饲料成本暴涨","肉类涨价→CPI","化肥/农机需求次年增"],
-    disciplines: ["气象学","农业学","经济学"], outcome: "CORN涨27%; SOYB涨20%; ADM涨", tickers: ["CORN","SOYB","WEAT","ADM","MOS","DE"], sector: "agriculture,materials", magnitude: "large", time_to_impact: "即时到6月+", lesson: "美国是全球粮仓,中西部天气直接影响全球粮价", tags: ["drought","crop","corn","agriculture","food","weather","hot","heat","干旱","旱灾","农业","粮食","高温","天气","热","酷暑"] },
-  { id: "oil-price-war-2020", title: "OPEC+价格战: 原油跌至负值", year: 2020, trigger: "沙特俄罗斯减产谈判破裂",
-    chain_summary: "减产协议崩→沙特增产报复→需求崩(COVID)→油价负值→能源行业重组", steps: ["OPEC+谈判破裂(地缘)","沙特宣布增产至12M bpd","COVID需求崩叠加","WTI跌至-$37/桶(史无前例)","页岩油企业破产潮","幸存者产能整合"],
-    disciplines: ["地缘政治","经济学","供应链"], outcome: "WTI从$60跌至-$37; XLE跌50%; 后续USO结构性亏损", tickers: ["USO","XLE","XOM","COP","OXY"], sector: "energy", magnitude: "extreme", time_to_impact: "即时到1年", lesson: "供给战+需求崩=史无前例;负油价说明仓储是物理约束", tags: ["oil","OPEC","Saudi","price war","energy","crude","负油价","石油","原油","能源","油价","暴跌","OPEC"] },
+  { id: "covid-2020", title: "COVID-19: A Pneumonia Outbreak Triggers a Global Market Tsunami", year: 2020, trigger: "Unknown pneumonia cases emerge in Wuhan",
+    chain_summary: "Local outbreak → global pandemic → lockdowns → market crash → Fed easing → tech mega-rally", steps: ["Unknown pneumonia (Epidemiology)","Human-to-human transmission → global spread","Lockdowns → economic shutdown","S&P500 drops 34% (panic)","Fed zero rates + unlimited QE","WFH explosion → Zoom/AMZN surge","mRNA vaccines → MRNA/BNTX rally"],
+    disciplines: ["Epidemiology","Psychology","Monetary Economics"], outcome: "SPY 339→218→373; MRNA 19→157", tickers: ["SPY","MRNA","ZM","AMZN","PFE"], sector: "pharma,tech", magnitude: "extreme", time_to_impact: "2-4 week crash, 6-12 month recovery", lesson: "In extreme events, find the crisis beneficiaries", tags: ["pandemic","flu","virus","sneeze","cough","health","lockdown","Fed","疫情","新冠","肺炎","封锁","感冒","咳嗽","打喷嚏","病毒","口罩","居家","生病"] },
+  { id: "texas-freeze-2021", title: "Texas Deep Freeze: Ice Storm Triggers Energy Crisis", year: 2021, trigger: "Texas hit by rare polar vortex",
+    chain_summary: "Extreme cold → heating demand surge → grid collapse → nat gas spike → energy stocks rally", steps: ["Polar vortex pushes to -18°C (Meteorology)","Heating demand surges 400%","Wind turbines freeze + pipeline blockage (Engineering)","ERCOT grid collapse, 4.3M without power","Nat gas spot hits $400/MMBtu","Energy stocks surge"],
+    disciplines: ["Meteorology","Physics","Engineering","Economics"], outcome: "UNG +12% in one week; OXY +15%", tickers: ["UNG","OXY","XOM","LNG"], sector: "energy", magnitude: "large", time_to_impact: "Immediate to 2 weeks", lesson: "Extreme weather impacts energy immediately and violently", tags: ["cold","freeze","snow","weather","energy","gas","heating","power grid","寒潮","降温","极寒","暴雪","冰冻","天然气","能源","停电","冷","暴风雪","寒流"] },
+  { id: "hurricane-katrina-2005", title: "Hurricane Katrina: From Storm to Oil Price Spike", year: 2005, trigger: "Category 5 hurricane makes landfall in Gulf Coast",
+    chain_summary: "Hurricane → oil platform shutdown → gasoline shortage → oil price surge", steps: ["Cat 5 hurricane (Meteorology)","95% Gulf of Mexico production shut in","Refineries damaged","Gasoline $3+/gallon","Crude $70+/barrel","Massive insurance payouts"],
+    disciplines: ["Meteorology","Engineering","Economics"], outcome: "WTI $60→$70+; HD/LOW benefit from rebuilding", tickers: ["USO","XLE","HD","LOW","ALL"], sector: "energy,industrials", magnitude: "large", time_to_impact: "Immediate to months", lesson: "Hurricane season: watch Gulf capacity + post-disaster rebuilding plays", tags: ["hurricane","storm","flood","oil","energy","insurance","rebuild","飓风","暴风","洪水","石油","能源","保险","重建","台风","暴雨"] },
+  { id: "russia-ukraine-2022", title: "Russia-Ukraine War: Reshaping the Global Energy Map", year: 2022, trigger: "Russia invades Ukraine",
+    chain_summary: "War → sanctions → energy crisis → inflation → rate hikes → growth stocks crash", steps: ["Full-scale Russian invasion (Geopolitics)","Western comprehensive sanctions","Russia cuts gas to Europe → energy crisis","Oil $120+","CPI 9.1%","Fed hikes to 5.25%+","NASDAQ down 33%"],
+    disciplines: ["Geopolitics","Economics","Monetary Policy"], outcome: "XLE +65%; LMT +37%; QQQ -33%", tickers: ["XLE","LMT","RTX","GLD","QQQ"], sector: "energy,defense", magnitude: "extreme", time_to_impact: "Immediate to 1-2 years", lesson: "Geopolitical shock: Wave 1 safe-haven, Wave 2 supply chain, Wave 3 inflation→hikes", tags: ["war","conflict","Russia","oil","gas","inflation","Fed","defense","sanction","俄乌","战争","冲突","制裁","石油","天然气","通胀","加息","国防","地缘"] },
+  { id: "trade-war-2018", title: "US-China Trade War: Tariff Shadows Over Tech Decoupling", year: 2018, trigger: "US imposes tariffs on Chinese goods",
+    chain_summary: "Tariffs → supply chain uncertainty → tech under pressure → flight to safety", steps: ["25% tariffs on $250B goods","China retaliates","PMI declines","Semiconductor/Apple threatened","VIX surges","Safe-haven flows into Treasuries"],
+    disciplines: ["International Trade","Supply Chain","Psychology"], outcome: "SPY Q4 -20%; AAPL -39%; SMH -25%", tickers: ["SPY","AAPL","SMH","TLT","GLD"], sector: "tech,macro", magnitude: "large", time_to_impact: "Immediate to months", lesson: "Tariffs punish globalization winners, accelerate supply chain diversification", tags: ["tariff","trade war","China","supply chain","semiconductor","trump","特朗普","贸易战","关税","中美","中国","供应链","半导体","芯片"] },
+  { id: "fed-pivot-2023", title: "Fed Pivot: One Sentence Ignites a Bull Market", year: 2023, trigger: "Fed signals potential 2024 rate cuts",
+    chain_summary: "Fed dovish → rates peak → growth stock re-rating → Mag7 rally", steps: ["Powell signals end of hikes","10Y drops from 5% to 3.8%","DCF discount rate↓ → growth stocks↑","AI narrative + Mag7 mega-rally"],
+    disciplines: ["Monetary Policy","Finance","Psychology"], outcome: "QQQ +54%; NVDA +239%", tickers: ["QQQ","NVDA","META","TLT"], sector: "tech,macro", magnitude: "large", time_to_impact: "Days to ignite, months to play out", lesson: "Don't fight the Fed — rate direction determines growth vs value", tags: ["Fed","rate","pivot","dovish","growth","tech","bond","美联储","降息","利率","鸽派","科技股","成长股","债券"] },
+  { id: "chatgpt-2022", title: "ChatGPT Launch: AI Goes From Paper to Mass Adoption", year: 2022, trigger: "OpenAI launches ChatGPT — 100M users in 2 months",
+    chain_summary: "ChatGPT → AI arms race → GPU shortage → NVDA supercycle", steps: ["ChatGPT launch, mass adoption","Corporate AI compute arms race","NVIDIA GPUs sell out","NVDA revenue doubles","AI infrastructure sector follows"],
+    disciplines: ["Computer Science","Economics","Supply Chain"], outcome: "NVDA +240%; MSFT +57%; META +194%", tickers: ["NVDA","MSFT","META","AMD","SMH"], sector: "tech", magnitude: "extreme", time_to_impact: "1-3 months narrative, 6-12 months earnings delivery", lesson: "Paradigm-level tech breakthroughs benefit pick-and-shovel (infra) players most", tags: ["AI","ChatGPT","GPU","semiconductor","NVIDIA","data center","人工智能","芯片","算力","数据中心","英伟达","半导体"] },
+  { id: "gme-2021", title: "GameStop Short Squeeze: Retail vs Wall Street", year: 2021, trigger: "Reddit WallStreetBets collectively buys GME",
+    chain_summary: "Social media → retail herd buying → short squeeze → GME 100x", steps: ["DFV posts analysis on Reddit","Melvin Capital 140% short","Retail piles in, short squeeze","GME $4→$483","Robinhood restricts buying","SEC intervenes"],
+    disciplines: ["Behavioral Finance","Media Studies","Game Theory"], outcome: "GME $4→$483; AMC $2→$72", tickers: ["GME","AMC","HOOD"], sector: "consumer,financials", magnitude: "large", time_to_impact: "1-2 weeks of extreme volatility", lesson: "Social media era: retail collective action is now a market force", tags: ["meme","Reddit","short squeeze","retail","social media","GameStop","散户","逼空","社交媒体","投机"] },
+  { id: "fed-hike-2022", title: "2022 Rate Hike Cycle: Fastest in 40 Years Kills Valuations", year: 2022, trigger: "CPI hits 9.1%, Fed hikes aggressively",
+    chain_summary: "Inflation out of control → aggressive hikes → growth stocks crash → value/energy outperform", steps: ["Post-COVID demand + supply bottleneck → CPI 9.1%","Fed hikes from 0% to 5.25%","10Y surges from 1.5% to 4.2%","ARKK -67%","Value/energy outperform"],
+    disciplines: ["Monetary Policy","Macroeconomics","Finance"], outcome: "ARKK -67%; QQQ -33%; XLE +65%", tickers: ["ARKK","QQQ","XLE","TLT"], sector: "tech,energy,macro", magnitude: "extreme", time_to_impact: "Full year", lesson: "Interest rates are the anchor for all asset pricing", tags: ["Fed","rate hike","inflation","CPI","growth","value","rotation","美联储","加息","通胀","通货膨胀","利率","涨价","物价"] },
+  { id: "btc-etf-2024", title: "Bitcoin ETF Approval: Crypto Goes Mainstream", year: 2024, trigger: "SEC approves first spot Bitcoin ETFs",
+    chain_summary: "ETF approval → institutional inflow → BTC breaks $70K → miners/exchanges rally", steps: ["SEC approves 11 spot BTC ETFs","IBIT attracts $4B+ in first month","BTC rallies from $42K to $73K","MARA/RIOT mining stocks surge","COIN trading volume spikes"],
+    disciplines: ["Financial Regulation","Economics","Finance"], outcome: "BTC $42K→$73K; MARA +120%; COIN +60%", tickers: ["IBIT","COIN","MARA","MSTR"], sector: "financials,tech", magnitude: "large", time_to_impact: "Immediate to 3-6 months", lesson: "When regulation shifts from headwind to tailwind — strongest buy signal", tags: ["bitcoin","crypto","ETF","SEC","regulation","mining","比特币","加密货币","监管","数字货币"] },
+  { id: "ozempic-2023", title: "GLP-1 Weight Loss Drugs: Supply Chain Earthquake", year: 2023, trigger: "Ozempic/Wegovy weight loss efficacy goes viral",
+    chain_summary: "Weight loss drugs explode → LLY/NVO surge → snack/medtech expectations cut", steps: ["GLP-1 achieves 15-20% weight reduction (Pharmacology)","Social media + celebrity effect → mass demand","LLY/NVO market cap surges","Weight loss → snack demand↓","Gastric bypass/sleep apnea device demand↓","WMT confirms basket composition changes"],
+    disciplines: ["Pharmacology","Psychology","Consumer Behavior"], outcome: "LLY $330→$800+; DXCM -40%", tickers: ["LLY","NVO","MDLZ","DXCM"], sector: "pharma,consumer", magnitude: "large", time_to_impact: "3-6 months narrative, 12-24 months transmission", lesson: "Disruptive therapy reshapes entire consumer chain — find second-order impacts", tags: ["drug","obesity","weight loss","GLP-1","health","food","pharma","减肥","减肥药","肥胖","健康","医药","零食"] },
+  { id: "suez-2021", title: "Ever Given Stuck: One Ship Blocks Global Trade", year: 2021, trigger: "Container ship runs aground in Suez Canal",
+    chain_summary: "Canal blocked → shipping halted → freight rates spike → inflation pressure", steps: ["400m vessel lodges sideways","$9.6B/day of trade blocked","Container freight rates surge","European imports delayed","Inflation expectations rise"],
+    disciplines: ["Physics","Economics","Logistics"], outcome: "ZIM/MATX rally; oil prices short-term rise", tickers: ["ZIM","MATX","USO"], sector: "industrials,energy", magnitude: "medium", time_to_impact: "Immediate to months", lesson: "Trade chokepoint disruption → shipping stocks surge → inflation transmission", tags: ["supply chain","shipping","logistics","trade","inflation","供应链","航运","物流","运费","运河","通胀","堵塞"] },
+  { id: "svb-2023", title: "SVB Collapse: 48-Hour Bank Run", year: 2023, trigger: "SVB announces $1.8B bond loss sale",
+    chain_summary: "SVB losses → social media spreads → bank run → collapse → regional bank panic", steps: ["SVB underwater on long-dated Treasuries (Finance)","Social media goes viral (Media)","$42B withdrawn in single day","FDIC takeover","Panic spreads → First Republic falls","KRE drops 30%","Flight to safety → JPM gains"],
+    disciplines: ["Finance","Psychology","Media Studies"], outcome: "KRE -30%; JPM gains; GLD +10%", tickers: ["KRE","JPM","GLD","TLT"], sector: "financials,safe_haven", magnitude: "large", time_to_impact: "Immediate to months", lesson: "Social media era bank runs are 100x faster — distinguish flyers from fortresses", tags: ["bank","crisis","panic","fear","deposit","regional bank","safe haven","银行","危机","挤兑","恐慌","存款","倒闭"] },
+  { id: "drought-2012", title: "2012 US Mega-Drought: Corn Belt Turns to Dust Bowl", year: 2012, trigger: "Worst Midwest drought in 50 years",
+    chain_summary: "Drought → corn/soy crop failure → ag commodities spike → feed costs↑ → meat price inflation", steps: ["Extreme drought (Meteorology)","USDA slashes production estimates","Corn rallies from $5 to $8.3","Feed costs surge","Meat prices rise → food CPI","Fertilizer/equipment demand rises next year"],
+    disciplines: ["Meteorology","Agriculture","Economics"], outcome: "CORN +27%; SOYB +20%; ADM rallies", tickers: ["CORN","SOYB","WEAT","ADM","MOS","DE"], sector: "agriculture,materials", magnitude: "large", time_to_impact: "Immediate to 6+ months", lesson: "US is the world's breadbasket — Midwest weather directly impacts global grain prices", tags: ["drought","crop","corn","agriculture","food","weather","hot","heat","干旱","旱灾","农业","粮食","高温","天气","热","酷暑"] },
+  { id: "oil-price-war-2020", title: "OPEC+ Price War: Crude Oil Goes Negative", year: 2020, trigger: "Saudi-Russia production cut talks collapse",
+    chain_summary: "Output deal collapses → Saudi floods market → COVID demand crash → oil goes negative → energy sector restructuring", steps: ["OPEC+ talks break down (Geopolitics)","Saudi ramps to 12M bpd","COVID demand collapse compounds","WTI hits -$37/barrel (unprecedented)","Shale bankruptcies","Survivors consolidate capacity"],
+    disciplines: ["Geopolitics","Economics","Supply Chain"], outcome: "WTI $60→-$37; XLE -50%; USO structural losses", tickers: ["USO","XLE","XOM","COP","OXY"], sector: "energy", magnitude: "extreme", time_to_impact: "Immediate to 1 year", lesson: "Supply war + demand crash = unprecedented; negative oil proves storage is a physical constraint", tags: ["oil","OPEC","Saudi","price war","energy","crude","负油价","石油","原油","能源","油价","暴跌","OPEC"] },
 ];
 
 function searchCases(keywords: string[]): Array<{ case_data: HistCase; score: number }> {
@@ -374,175 +374,175 @@ function searchCases(keywords: string[]): Array<{ case_data: HistCase; score: nu
 // ======================================================================
 
 const DISCIPLINE_KNOWLEDGE: Record<string, string> = {
-  weather: `### 关键学科知识（天气→金融）
+  weather: `### Key Discipline Knowledge (Weather → Finance)
 
-**物理/能源：**
-- HDD(采暖度日)每偏离历史均值10% → 天然气现货约波动5-8%
-- 天然气库存低于5年均值>15% = 价格上行风险加大
-- EIA周度库存报告(每周四) = 天然气价格最强短期催化剂
-- ERCOT电力储备margin<6% = 限电风险显著
-- 飓风Cat3+登陆Gulf Coast → 历史平均5-15%油价短期跳升
+**Physics / Energy:**
+- HDD (Heating Degree Days) deviating 10% from historical mean → nat gas spot moves ~5-8%
+- Nat gas inventory >15% below 5-year average = upside price risk elevated
+- EIA weekly storage report (every Thursday) = strongest short-term nat gas catalyst
+- ERCOT power reserve margin <6% = significant curtailment risk
+- Hurricane Cat 3+ making landfall on Gulf Coast → historical avg 5-15% short-term oil spike
 
-**常见错误：**
-- 天气预报≠确定事件，关注概率偏差
-- 大型能源公司通常对冲了60-80%产量，短期价格暴涨对EPS影响有限
-- 现货价暴涨≠远月也涨，看期货曲线结构(contango/backwardation)
+**Common Mistakes:**
+- Weather forecast ≠ certainty — focus on probability deviation
+- Major energy companies typically hedge 60-80% of production — short-term price spikes have limited EPS impact
+- Spot price spike ≠ long-dated futures rise — check curve structure (contango/backwardation)
 
-**气象→农业：**
-- Corn Belt干旱 → CORN/SOYB↑ → 饲料成本↑ → 肉类涨价 → 食品CPI↑
-- 受益标的: MOS(化肥), ADM(粮商), DE(农机)
+**Weather → Agriculture:**
+- Corn Belt drought → CORN/SOYB↑ → feed costs↑ → meat prices rise → food CPI↑
+- Beneficiaries: MOS (fertilizer), ADM (grain), DE (farm equipment)
 
-**天气→消费行为：**
-- 暖冬: UNG↓, 但户外零售↑(NKE/LULU)
-- 寒潮: UNG↑, 室内消费↑(NFLX/EA), 电商替代(AMZN↑)
-- 飓风威胁: 备灾消费(HD/LOW↑), 出行取消(DAL/UAL↓)`,
+**Weather → Consumer Behavior:**
+- Warm winter: UNG↓, but outdoor retail↑ (NKE/LULU)
+- Cold snap: UNG↑, indoor consumption↑ (NFLX/EA), e-commerce substitution (AMZN↑)
+- Hurricane threat: disaster prep (HD/LOW↑), travel cancellations (DAL/UAL↓)`,
 
-  physiological: `### 关键学科知识（生理→金融）
+  physiological: `### Key Discipline Knowledge (Physiology → Finance)
 
-**流行病学锚点：**
-- CDC ILI baseline ~2.5%，超过3.5% = 流感季偏强
-- 美国年流感医疗支出~$11B，严重年份$20B+
-- GLP-1市场年增速>50%，渗透率<5%（长跑道）
-- Pharma新药: Phase 3 → FDA filing → 审批 = 6-18月
+**Epidemiology Anchors:**
+- CDC ILI baseline ~2.5%, above 3.5% = flu season running hot
+- US annual flu healthcare spending ~$11B, severe years $20B+
+- GLP-1 market growing >50% YoY, penetration <5% (long runway)
+- Pharma new drug: Phase 3 → FDA filing → approval = 6-18 months
 
-**季节性健康周期：**
-- Winter: Flu peak → PFE/GILD/ABT; 室内↑ → NFLX/gaming
-- Spring: Allergy → 抗过敏OTC; 户外↑ → NKE/LULU
-- Summer: 防晒/饮料(KO,PEP); Travel peak → BKNG/ABNB
+**Seasonal Health Cycle:**
+- Winter: Flu peak → PFE/GILD/ABT; indoor↑ → NFLX/gaming
+- Spring: Allergy season → OTC antihistamines; outdoor↑ → NKE/LULU
+- Summer: Sunscreen/beverages (KO, PEP); travel peak → BKNG/ABNB
 - Fall: Flu vaccine rollout → MRNA/PFE
 
-**常见错误：**
-- "我打喷嚏"≠"流感爆发"，需要CDC数据确认群体趋势
-- 流感药占PFE总收入<5%，流感季强也不会大幅推升PFE
-- 人口老龄化是十年趋势，不能用来推"这周买什么"`,
+**Common Mistakes:**
+- "I sneezed" ≠ "flu outbreak" — need CDC data to confirm population trend
+- Flu drugs are <5% of PFE revenue — a strong flu season barely moves PFE
+- Population aging is a decade-long trend — can't use it to justify "buy this week"`,
 
-  economic: `### 关键学科知识（经济→金融）
+  economic: `### Key Discipline Knowledge (Economics → Finance)
 
-**Fed反应函数（最重要单一变量）：**
-- Core PCE>3% = 不会降息, >4% = 可能加息, <2.5% = 降息窗口
-- 10Y每上升100bp → QQQ历史平均承压-8~-12%
-- Unemployment<4% = 劳动力紧→工资通胀; >4.5% = 衰退预警
-- ISM PMI<47 = 历史高衰退概率
-- Yield Curve(2Y-10Y)倒挂 = 衰退预警(领先12-18月)
+**Fed Reaction Function (single most important variable):**
+- Core PCE >3% = no rate cuts, >4% = possible hikes, <2.5% = cut window opens
+- 10Y yield every 100bp rise → QQQ historical avg -8% to -12%
+- Unemployment <4% = tight labor → wage inflation; >4.5% = recession warning
+- ISM PMI <47 = historically high recession probability
+- Yield Curve (2Y-10Y) inversion = recession warning (leads by 12-18 months)
 
-**板块轮动：**
-- CPI↑: XLE,GLD,TIP ↑ / TLT,QQQ ↓
-- NFP强: XLY,XLF ↑ / TLT ↓(降息推迟)
-- Fed降息: QQQ,XLRE,GLD ↑ / KBE ↓
+**Sector Rotation:**
+- CPI↑: XLE, GLD, TIP ↑ / TLT, QQQ ↓
+- Strong NFP: XLY, XLF ↑ / TLT ↓ (cuts delayed)
+- Fed cuts: QQQ, XLRE, GLD ↑ / KBE ↓
 
-**常见错误：**
-- CPI单月跳升≠通胀失控，看3月annualized rate
-- Fed说的≠Fed要做的，看dot plot和实际利率路径
-- Headline NFP增加但全是兼职/政府岗→信号完全不同`,
+**Common Mistakes:**
+- Single-month CPI jump ≠ runaway inflation — look at 3-month annualized rate
+- What the Fed says ≠ what the Fed does — watch dot plot and actual rate path
+- Headline NFP adds jobs but all part-time/government → completely different signal`,
 
-  geopolitical: `### 关键学科知识（地缘→金融）
+  geopolitical: `### Key Discipline Knowledge (Geopolitics → Finance)
 
-**传导波次：**
-- 第一波(0-48h): 恐慌→VIX↑, GLD↑, TLT↑, 股市↓
-- 第二波(1-4周): 供应链冲击→受影响大宗暴涨
-- 第三波(1-6月): 通胀传导→CPI↑→Fed政策变化
-- 第四波(6月+): 产业重构→供应链转移/国防支出/能源安全
+**Transmission Waves:**
+- Wave 1 (0-48h): Panic → VIX↑, GLD↑, TLT↑, equities↓
+- Wave 2 (1-4 weeks): Supply chain shock → affected commodities spike
+- Wave 3 (1-6 months): Inflation transmission → CPI↑ → Fed policy shift
+- Wave 4 (6+ months): Industry restructuring → reshoring/defense spending/energy security
 
-**资源控制关键数据：**
-- 俄罗斯: 石油出口~12%, 天然气~17%, 钯~40%, 小麦~18%
-- 台湾(TSMC): 先进制程芯片>80%(7nm以下)
-- 中东(OPEC+): ~40%石油产能, 沙特swing capacity~2-3M bpd
-- Strait of Hormuz: ~20%全球石油贸易
-- 中国: ~60%稀土加工, ~80%锂电池产能
+**Resource Control Key Data:**
+- Russia: oil exports ~12%, nat gas ~17%, palladium ~40%, wheat ~18%
+- Taiwan (TSMC): advanced node chips >80% (7nm and below)
+- Middle East (OPEC+): ~40% oil capacity, Saudi swing capacity ~2-3M bpd
+- Strait of Hormuz: ~20% global oil trade
+- China: ~60% rare earth processing, ~80% lithium battery capacity
 
-**常见错误：**
-- 80%地缘事件市场冲击是短暂的(1-4周回落)，除非引发实质供应中断
-- 台海风险是极端尾部事件(low prob, extreme impact)，不能做日常推理
-- 第二次关税升级冲击通常小于第一次(供应链已开始调整)`,
+**Common Mistakes:**
+- 80% of geopolitical events have transient market impact (1-4 week reversion) — unless real supply disruption
+- Taiwan Strait is an extreme tail risk (low prob, extreme impact) — don't use for daily reasoning
+- Second round of tariff escalation typically has smaller market impact than first (supply chains already adjusting)`,
 
-  technology: `### 关键学科知识（科技→金融）
+  technology: `### Key Discipline Knowledge (Technology → Finance)
 
-**AI算力供应链（当前最热）：**
-- GPU: NVDA(>80%) → AMD → INTC
-- HBM内存: SK Hynix, Samsung, MU
-- CoWoS封装: TSMC(产能瓶颈)
-- 光模块: COHR → 数据中心互联
-- 电力: 数据中心耗电暴增 → VST, CEG
-- 冷却: VRT(液冷)
-- 云: AMZN(AWS), MSFT(Azure), GOOGL(GCP)
+**AI Compute Supply Chain (current hottest):**
+- GPU: NVDA (>80%) → AMD → INTC
+- HBM memory: SK Hynix, Samsung, MU
+- CoWoS packaging: TSMC (capacity bottleneck)
+- Optical modules: COHR → data center interconnect
+- Power: data center electricity demand surging → VST, CEG
+- Cooling: VRT (liquid cooling)
+- Cloud: AMZN (AWS), MSFT (Azure), GOOGL (GCP)
 
-**供应链分析框架：**
-- 瓶颈分析: 产能最紧环节=最大定价权=最大利润弹性
-- TSMC产能利用率>95% = 涨价能力强, <80% = 行业低迷
-- 半导体库存周期~3-4年, 库存/营收比>1.5x = 过剩预警
+**Supply Chain Analysis Framework:**
+- Bottleneck analysis: tightest capacity node = greatest pricing power = greatest margin leverage
+- TSMC utilization >95% = strong pricing power, <80% = industry downturn
+- Semiconductor inventory cycle ~3-4 years, inventory/revenue ratio >1.5x = glut warning
 
-**常见错误：**
-- "瓶颈"不是永久的，所有瓶颈终将被capex解决(2-3年)
-- 短缺时下游double-ordering → 真实需求被放大 → 泡沫化库存
-- 营收暴增但上游也涨价 → 利润可能反而压缩`,
+**Common Mistakes:**
+- "Bottleneck" isn't permanent — all bottlenecks eventually resolved by capex (2-3 year cycle)
+- During shortage, downstream double-ordering → real demand overstated → phantom inventory bubble
+- Revenue surging but upstream also raising prices → margins may actually compress`,
 
-  policy: `### 关键学科知识（政策→金融）
+  policy: `### Key Discipline Knowledge (Policy → Finance)
 
-**制裁经济学：**
-- 制裁→被制裁国出口受阻→全球供给↓→大宗涨价→替代供应商受益
-- 例: 制裁俄石油→沙特/美页岩受益→XOM, COP
-- 例: 制裁中国芯片→美设备短期受益但长期风险→ASML, LRCX
+**Sanctions Economics:**
+- Sanctions → sanctioned country exports blocked → global supply↓ → commodity prices↑ → alternative suppliers benefit
+- Example: Russia oil sanctions → Saudi/US shale benefits → XOM, COP
+- Example: China chip sanctions → US equipment benefits short-term but long-term risk → ASML, LRCX
 
-**美国政治周期：**
-- 大选年: 政策不确定性↑→VIX季节性走高(Q3)
-- 两党差异: 能源/医疗/科技/加密受影响
-- 新总统: FTC/SEC/EPA政策转向→科技并购/能源方向切换
+**US Political Cycle:**
+- Election year: policy uncertainty↑ → VIX seasonal rise (Q3)
+- Party differences: energy/healthcare/tech/crypto affected
+- New president: FTC/SEC/EPA policy shifts → tech M&A/energy direction switch
 
-**常见错误：**
-- 政策宣布≠政策执行, 关注立法进程时间线
-- 市场在政策明确前会price in预期，明确后反而"buy rumor sell news"`,
+**Common Mistakes:**
+- Policy announced ≠ policy enacted — track legislative timeline
+- Market prices in expectations before policy is final — "buy the rumor, sell the news"`,
 
-  social: `### 关键学科知识（社会→金融）
+  social: `### Key Discipline Knowledge (Social → Finance)
 
-**美国代际消费差异：**
-- Boomers(60-78): Healthcare/旅行/分红股→UNH, BKNG, VYM
-- Gen X(44-59): 房贷/子女教育/401k→银行, SPY/QQQ
-- Millennials(29-43): 体验>物质/订阅/ESG→ABNB, NFLX, ICLN
-- Gen Z(13-28): 短视频/环保/mental health→SNAP, TDOC
+**US Generational Consumer Differences:**
+- Boomers (60-78): Healthcare/travel/dividend stocks → UNH, BKNG, VYM
+- Gen X (44-59): Mortgages/education/401k → banks, SPY/QQQ
+- Millennials (29-43): Experiences > things / subscriptions / ESG → ABNB, NFLX, ICLN
+- Gen Z (13-28): Short video / sustainability / mental health → SNAP, TDOC
 
-**关键趋势→标的：**
+**Key Trends → Tickers:**
 - Remote Work: ZM, MSFT, EQIX ↑ / SPG ↓
 - Ozempic Culture: LLY, NVO ↑ / MDLZ, DXCM ↓
-- AI Anxiety: COUR ↑(upskilling)
-- Loneliness: CHWY(宠物), META(社交), TDOC(心理健康)
+- AI Anxiety: COUR ↑ (upskilling)
+- Loneliness Epidemic: CHWY (pets), META (social), TDOC (mental health)
 
-**常见错误：**
-- 区分viral moment vs secular trend, 看渗透率和adoption curve
-- 社交媒体热度≠真实消费变化，需要数据验证`,
+**Common Mistakes:**
+- Distinguish viral moment vs secular trend — check penetration rate and adoption curve
+- Social media buzz ≠ real consumer behavior change — need data verification`,
 
-  nature: `### 关键学科知识（自然事件→金融）
+  nature: `### Key Discipline Knowledge (Natural Events → Finance)
 
-**灾害传导：**
-- 供应链中断→替代品需求↑→替代供应商受益
-- 保险理赔→ALL/TRV短期承压→但能提价回血(中期)
-- 灾后重建→HD/LOW/建材受益
+**Disaster Transmission:**
+- Supply chain disruption → substitute demand↑ → alternative suppliers benefit
+- Insurance claims → ALL/TRV short-term pressure → but can reprice higher (medium-term)
+- Post-disaster rebuilding → HD/LOW/building materials benefit
 
-**关键数据：**
-- 飓风季: Jun-Nov, Gulf Coast影响石油产能
-- 野火: California为主, 保险撤出→RE↓, 电力公司责任(PCG风险)
-- 地震: 美国西海岸, 关注supply chain disruption
+**Key Data:**
+- Hurricane season: Jun-Nov, Gulf Coast impacts oil capacity
+- Wildfire: primarily California, insurance withdrawal → RE↓, utility liability (PCG risk)
+- Earthquake: US West Coast, watch for supply chain disruption
 
-**常见错误：**
-- 自然灾害对市场冲击通常是短暂的，除非规模极端
-- 保险股短期跌但中期可能因提价反弹`,
+**Common Mistakes:**
+- Natural disaster market impacts are usually transient — unless extreme scale
+- Insurance stocks dip short-term but may rebound as they reprice premiums`,
 
-  daily: `### 关键学科知识（日常观察→金融）
+  daily: `### Key Discipline Knowledge (Daily Observation → Finance)
 
-**消费观察→趋势：**
-- 排队/火爆 = 需求旺盛 → 看龙头公司增速
-- 冷清/关店 = 需求萎缩 → 看行业周期位置
-- 新消费现象 = 可能是趋势拐点
+**Consumer Observation → Trends:**
+- Long lines / packed stores = strong demand → watch sector leader growth rates
+- Empty / stores closing = weak demand → check where we are in the cycle
+- New consumption pattern = possible trend inflection point
 
-**市场传导机制：**
-- EPS预期修正: 事件→影响收入/成本→分析师修正→股价(1-4周)
-- 估值倍数变化: 叙事变化→PE扩张/收缩(可能即时)
-- 资金流: 投资者重配→板块轮动(即时到数周)
-- Price In检测: 如果Bloomberg/CNBC随便搜都有→已price in
+**Market Transmission Mechanisms:**
+- EPS revision: event → impacts revenue/cost → analyst revision → stock price (1-4 weeks)
+- Multiple change: narrative shift → PE expansion/compression (can be immediate)
+- Fund flows: investor reallocation → sector rotation (immediate to weeks)
+- Price-in detection: if Bloomberg/CNBC top results cover it → already priced in
 
-**常见错误：**
-- 利好事件≠股价涨, "buy rumor sell news"
-- 所有人都long某个ticker→即使基本面好upside也有限(crowded trade)
-- 用forward PE(预期盈利)而非trailing PE(过去盈利)做判断`,
+**Common Mistakes:**
+- Positive event ≠ stock goes up — "buy the rumor, sell the news"
+- Everyone already long a ticker → even with good fundamentals, upside is limited (crowded trade)
+- Use forward PE (expected earnings) not trailing PE (past earnings) for decisions`,
 };
 
 // ======================================================================
@@ -552,12 +552,12 @@ const DISCIPLINE_KNOWLEDGE: Record<string, string> = {
 export function registerMrIfReason(server: McpServer): void {
   server.tool(
     "mr_if_reason",
-    `Mr.IF蝴蝶效应推理引擎。输入任何日常事件,一次性返回: 事件分类、推理链模板、历史先例、验证框架、汇合规则。
-这是Mr.IF的核心推理工具,必须在所有其他工具之前调用。
-用户说"今天降温了"→不是问买衣服,是问关注什么美股。永远从金融视角解读用户输入。`,
+    `Mr.IF butterfly-effect reasoning engine. Input any everyday event, returns in one call: event classification, chain templates, historical precedents, validation framework, confluence rules.
+This is Mr.IF's core reasoning tool — MUST be called BEFORE all other tools.
+User says "it's getting cold" → not asking to buy a jacket, asking which US stocks to watch. ALWAYS interpret user input from a financial perspective.`,
     {
-      user_input: z.string().describe("用户的原始输入,例如'今天降温了'、'特朗普又发神经了'"),
-      current_date: z.string().optional().describe("当前日期 YYYY-MM-DD"),
+      user_input: z.string().describe("User's raw input, e.g. 'it's getting cold', 'Trump is at it again'"),
+      current_date: z.string().optional().describe("Current date YYYY-MM-DD"),
     },
     async ({ user_input, current_date }) => {
       const date = current_date ? new Date(current_date) : new Date();
@@ -583,7 +583,7 @@ export function registerMrIfReason(server: McpServer): void {
           pattern: tpl?.pattern || "通用推理",
           disciplines: tpl?.disciplines || ["经济学"],
           typical_steps: tpl?.typical_steps || 4,
-          prompt: `从"${user_input}"出发,按【${tpl?.name}】模式推理: ${tpl?.pattern}。涉及学科: ${tpl?.disciplines.join("、")}。${seasonContext ? `季节语境: ${seasonContext}` : ""}`,
+          prompt: `Starting from "${user_input}", reason using the [${tpl?.name}] pattern: ${tpl?.pattern}. Disciplines involved: ${tpl?.disciplines.join(", ")}. ${seasonContext ? `Seasonal context: ${seasonContext}` : ""}`,
         };
       });
 
@@ -603,78 +603,78 @@ export function registerMrIfReason(server: McpServer): void {
       const histSection = histMatches.length > 0
         ? histMatches.map(({ case_data: c, score }) =>
             `**${c.title}** (${c.year}, relevance: ${score})\n` +
-            `- 触发: ${c.trigger}\n` +
-            `- 链路: ${c.chain_summary}\n` +
-            `- 结果: ${c.outcome}\n` +
-            `- 标的: ${c.tickers.join(", ")}\n` +
-            `- 教训: ${c.lesson}`
+            `- Trigger: ${c.trigger}\n` +
+            `- Chain: ${c.chain_summary}\n` +
+            `- Outcome: ${c.outcome}\n` +
+            `- Tickers: ${c.tickers.join(", ")}\n` +
+            `- Lesson: ${c.lesson}`
           ).join("\n\n")
-        : "无直接匹配案例。考虑用网络检索工具搜索类似历史事件。";
+        : "No direct match found. Consider using News Search tool for similar historical events.";
 
       const chainSection = chains.map((c) =>
         `**Chain ${c.chain_id}: ${c.name}**\n` +
-        `- 模式: ${c.pattern}\n` +
-        `- 学科: ${c.disciplines.join(" → ")}\n` +
-        `- 建议步数: ${c.typical_steps}\n` +
-        `- 构建指引: ${c.prompt}`
+        `- Pattern: ${c.pattern}\n` +
+        `- Disciplines: ${c.disciplines.join(" → ")}\n` +
+        `- Recommended steps: ${c.typical_steps}\n` +
+        `- Building guide: ${c.prompt}`
       ).join("\n\n");
 
-      const output = `# Mr.IF 推理引擎输出
+      const output = `# Mr.IF Reasoning Engine Output
 
-## 1. 事件分类
-- 用户输入: "${user_input}"
-- 事件类型: ${cls.primary_type} (${primaryInfo?.name || "日常观察"})
-- 次要类型: ${cls.secondary_types.join(", ") || "无"}
-- 命中关键词: ${cls.matched_keywords.join(", ") || "无精确命中，使用默认模板"}
-- 日期: ${date.toISOString().split("T")[0]}
-- 季节语境: ${seasonContext}
+## 1. Event Classification
+- User input: "${user_input}"
+- Event type: ${cls.primary_type} (${primaryInfo?.name || "Daily Observation"})
+- Secondary types: ${cls.secondary_types.join(", ") || "None"}
+- Matched keywords: ${cls.matched_keywords.join(", ") || "No exact match — using default templates"}
+- Date: ${date.toISOString().split("T")[0]}
+- Seasonal context: ${seasonContext}
 
-## 2. 推理方向
+## 2. Reasoning Directions
 ${allDirections.map((d, i) => `${i + 1}. ${d}`).join("\n")}
 
-## 3. 链条模板（用这些模板构建因果链）
+## 3. Chain Templates (use these to build causal chains)
 ${chainSection}
 
-## 4. 历史案例
+## 4. Historical Precedents
 ${histSection}
 
-## 5. 事件相关学科知识（推理时使用这些锚点和规则）
+## 5. Event-Relevant Discipline Knowledge (use these anchors and rules when reasoning)
 ${primaryKnowledge}
 ${secondaryKnowledge ? `\n${secondaryKnowledge}` : ""}
 
-## 6. 验证框架（给每条链打分）
-**6个维度：** 逻辑连贯性(25%) | 学科准确性(20%) | 假设显性化(15%) | 反面论证(15%) | 时间一致性(10%) | 规模合理性(15%)
+## 6. Validation Framework (score each chain)
+**6 Dimensions:** Logical coherence (25%) | Disciplinary accuracy (20%) | Assumption transparency (15%) | Counter-argument (15%) | Time consistency (10%) | Scale reasonableness (15%)
 
-**加分：** 链<4步+1 | 有历史先例+1 | 多链同向+0.5~1.0 | 实时数据支撑+1 | 公认原理+1
-**减分：** 链>5步-1 | 1个weak link-0.5 | 2+个weak-0.5再每个-1.0 | 未验证假设-1 | 单一学科-0.5 | 推理=市场共识-1
+**Bonus:** Chain <4 steps +1 | Has historical precedent +1 | Multiple chains converge +0.5~1.0 | Real-time data support +1 | Established principle +1
+**Penalty:** Chain >5 steps -1 | 1 weak link -0.5 | 2+ weak links -0.5 then -1.0 each | Unverified assumption -1 | Single discipline -0.5 | Reasoning = market consensus -1
 
-**汇合规则：** 2链同向→confidence+0.5 | 3链同向→+1.0 | 矛盾→标记mixed需裁决
+**Confluence rules:** 2 chains same direction → confidence +0.5 | 3 chains same direction → +1.0 | Contradiction → mark mixed, needs resolution
 
-## 7. 执行指令
+## 7. Execution Instructions
 
-**在你的thinking中，严格按以下顺序执行（7-Gate协议）：**
+**In your thinking, strictly follow this sequence (7-Gate Protocol):**
 
-Gate 1 事件锚定: 确认金融解读。如果你的解读像生活建议→重来。
-Gate 2 链条构建: 用上面的${chains.length}个模板，构建${chains.length}+条因果链。每步标注: 内容+学科+强度+"因为..."
-Gate 3 链条验证: 用上面的6维度打分。诚实标记弱点。得分<2.5→丢弃。
-Gate 4 历史对照: 对比上面的历史案例。一致→增强。矛盾→必须解释为什么这次不同。
-Gate 5 汇合分析: 多链收敛=高置信。矛盾=标记mixed。推导净方向(看多/看空/中性)。
-Gate 6 二阶检测: 每个净方向问——这是共识吗？隐藏赢家？隐藏输家？时间错配？
-Gate 7 出口检查: ①至少3条链 ②至少2个不同学科 ③有反面论证 ④有历史对照 ⑤有净方向 ⑥有二阶检测 ⑦有具体行业方向 ⑧无编造理论 ⑨至少1条链>=3分 ⑩全部通过
+Gate 1 Event Anchoring: Confirm financial interpretation. If your interpretation reads like life advice → start over.
+Gate 2 Chain Building: Use the ${chains.length} templates above to build ${chains.length}+ causal chains. Each step must tag: content + discipline + strength + "because..."
+Gate 3 Chain Validation: Score using the 6 dimensions above. Honestly flag weaknesses. Score <2.5 → discard.
+Gate 4 Historical Comparison: Compare against historical cases above. Consistent → strengthen. Contradicting → must explain why this time is different.
+Gate 5 Confluence Analysis: Multiple chains converge = high confidence. Contradiction = mark mixed. Derive net direction (bullish/bearish/neutral).
+Gate 6 Second-Order Check: For each net direction ask — is this consensus? Hidden winners? Hidden losers? Time mismatch?
+Gate 7 Exit Check: ①At least 3 chains ②At least 2 different disciplines ③Has counter-arguments ④Has historical comparison ⑤Has net direction ⑥Has second-order check ⑦Has specific sector direction ⑧No fabricated theories ⑨At least 1 chain scoring >=3 ⑩All passed
 
-**反幻觉规则：**
-- 不能倒推（先想好结论再编链）
-- 每个"因为"必须经得起追问
-- 不确定的学科理论→改用常识表述
-- 不确定的数字→标注"需取数工具确认"
-- 至少承认1条链有弱点
+**Anti-hallucination rules:**
+- No reverse-engineering (don't decide the conclusion first then build a chain to justify it)
+- Every "because" must withstand scrutiny
+- Uncertain discipline theory → use common-sense wording instead
+- Uncertain numbers → mark "needs data tool confirmation"
+- Admit at least 1 chain has a weakness
 
-**Gate 7全部通过后：**
-→ 调用 行业映射工具 → 证券映射工具 → 取数工具
-→ 按需调用: 网络检索工具(时事), 贪婪先生数据获取工具(情绪), dcf计算工具(估值), 等
-→ 合成自然的RIA风格回答 + 必须以ticker summary table结尾
+**After Gate 7 passes:**
+→ Call Industry Mapper → Security Mapper → Data Tool
+→ Conditionally call: News Search (current events), Sentiment Tool (market mood), DCF Calculator (valuation), etc.
+→ Synthesize into natural RIA-style response + MUST end with ticker summary table
 
-**永远不要向用户展示Gate、评分、链条标记、工具名称。输出要像坐在对面的投资顾问在聊天。**`;
+**NEVER show Gates, scores, chain labels, or tool names to the user. Output should read like a trusted investment advisor chatting across the table.**`;
 
       return {
         content: [{ type: "text" as const, text: output }],

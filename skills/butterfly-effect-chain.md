@@ -1,225 +1,225 @@
 ---
 name: butterfly-effect-chain
-description: "蝴蝶效应因果推理链构建器。从日常事件出发，通过多学科因果推理，构建从现象到金融市场影响的完整推理链。Mr.IF Agent的核心推理引擎。"
+description: "Butterfly effect causal reasoning chain builder. Starting from daily events, constructs complete reasoning chains from phenomena to financial market impacts through multi-disciplinary causal reasoning. Core reasoning engine for Mr.IF Agent."
 version: 1.0.0
 ---
 
-# Butterfly Effect Chain — 蝴蝶效应因果推理链
+# Butterfly Effect Chain — Butterfly Effect Causal Reasoning Chain
 
-## 使用场景
+## Usage Scenarios
 
-当需要从一个日常事件/现象推理出金融市场影响时，使用此 Skill：
-- 用户描述了一个日常观察（天气、身体感受、社会现象等）
-- 需要构建从 A 到 Z 的因果推理链
-- 需要从多个学科维度分析同一事件的市场影响
+Use this Skill when you need to reason from a daily event/phenomenon to financial market impacts:
+- User describes a daily observation (weather, physical sensations, social phenomena, etc.)
+- Need to construct a causal reasoning chain from A to Z
+- Need to analyze market impacts of the same event from multiple disciplinary dimensions
 
-## 核心方法论
+## Core Methodology
 
-### 蝴蝶效应推理三定律
+### Three Laws of Butterfly Effect Reasoning
 
-**第一定律：一切皆有关联**
-任何事件都不是孤立的。一个喷嚏背后是呼吸道健康、季节变化、空气质量、
-免疫系统……每个因素都连接着一条通往金融市场的路径。
+**First Law: Everything is Connected**
+No event is isolated. Behind a sneeze lies respiratory health, seasonal changes, air quality,
+immune system... Each factor connects to a path leading to financial markets.
 
-**第二定律：链条越短，置信度越高**
-3步因果链 > 5步因果链 > 7步因果链。
-每增加一步，不确定性指数级放大。超过7步的链条应被标记为"纯联想"。
+**Second Law: Shorter Chains, Higher Confidence**
+3-step causal chain > 5-step causal chain > 7-step causal chain.
+Each additional step exponentially amplifies uncertainty. Chains exceeding 7 steps should be marked as "pure association."
 
-**第三定律：交叉验证提升置信度**
-如果同一个金融结论可以从两个不同学科的因果链到达，
-则置信度 = max(链1, 链2) + 1星。
+**Third Law: Cross-Validation Increases Confidence**
+If the same financial conclusion can be reached through causal chains from two different disciplines,
+then confidence = max(chain1, chain2) + 1 star.
 
 ---
 
-## 因果链构建流程
+## Causal Chain Construction Process
 
-### Phase 1: 事件解构
+### Phase 1: Event Deconstruction
 
-将用户输入拆解为**可推理的原子事件**：
+Break down user input into **reasonably inferable atomic events**:
 
 ```
-输入: "今天打了个喷嚏"
+Input: "Sneezed today"
 
-原子拆解:
-├── 直接事实：发生了一次喷嚏反射
-├── 可能原因：
-│   ├── 呼吸道刺激（病毒/细菌/过敏原）
-│   ├── 温度变化（冷空气刺激）
-│   ├── 光线变化（光喷嚏反射）
-│   └── 灰尘/异物刺激
-├── 时间语境：
-│   ├── 当前月份 → 季节性因素
-│   ├── 近期天气 → 气候因素
-│   └── 近期疫情/流感 → 公共卫生因素
-└── 扩展维度：
-    ├── 个体行为 → 群体行为（大量人也在打喷嚏？）
-    ├── 症状 → 疾病 → 公共卫生
-    └── 身体信号 → 环境信号 → 系统性影响
+Atomic Decomposition:
+├── Direct fact: A sneeze reflex occurred
+├── Possible causes:
+│   ├── Respiratory irritation (virus/bacteria/allergen)
+│   ├── Temperature change (cold air stimulation)
+│   ├── Light change (photic sneeze reflex)
+│   └── Dust/foreign particle irritation
+├── Temporal context:
+│   ├── Current month → Seasonal factors
+│   ├── Recent weather → Climate factors
+│   └── Recent pandemic/flu → Public health factors
+└── Extended dimensions:
+    ├── Individual behavior → Group behavior (are many people sneezing?)
+    ├── Symptom → Disease → Public health
+    └── Body signal → Environmental signal → Systemic impact
 ```
 
-### Phase 2: 多维度链条生成
+### Phase 2: Multi-Dimensional Chain Generation
 
-为每个推理维度生成一条因果链。每条链的**内部数据结构**（提供给 chain_validate 工具）：
+Generate one causal chain for each reasoning dimension. **Internal data structure** for each chain (provided to chain_validate tool):
 
 ```
 chain_id: N
-chain_name: 名称
-disciplines: [学科路径]
-confidence: 1-5 (初始)
+chain_name: Name
+disciplines: [Disciplinary paths]
+confidence: 1-5 (initial)
 time_horizon: immediate / 1-2 weeks / 1 month / 1 quarter
 risk_level: low / medium / high
 
 chain_steps:
   - step_number: 1
-    content: [事件/推理内容]
-    discipline: [学科名]
+    content: [Event/reasoning content]
+    discipline: [Discipline name]
     link_strength: strong / weak
 
-  - step_number: N (最后一步)
-    content: 金融结论
+  - step_number: N (final step)
+    content: Financial conclusion
 
 financial_conclusion:
-  sector: [行业]
-  stocks: [ticker列表]
-  summary: [一句话逻辑浓缩]
+  sector: [Industry]
+  stocks: [Ticker list]
+  summary: [One-sentence logic summary]
 ```
 
-**注意：这些是内部推理数据，永远不要以这种格式展示给用户。用户只看到自然语言的洞察和建议。**
+**Note: These are internal reasoning data structures. Never display them in this format to users. Users only see natural language insights and recommendations.**
 
-### Phase 3: 链条质量检查
+### Phase 3: Chain Quality Checks
 
-每条链必须通过以下检查：
+Each chain must pass the following checks:
 
-**[CHECK-1] 逻辑连贯性**
-- 每一步是否从上一步逻辑可推导？
-- 是否存在"量子跳跃"（无法解释的大跨度推理）？
+**[CHECK-1] Logical Coherence**
+- Can each step be logically derived from the previous step?
+- Are there "quantum leaps" (unexplainable large-span reasoning)?
 
-**[CHECK-2] 学科准确性**
-- 引用的学科原理是否正确？
-- 是否曲解了某个学科概念？
+**[CHECK-2] Disciplinary Accuracy**
+- Are the referenced disciplinary principles correct?
+- Has any disciplinary concept been misinterpreted?
 
-**[CHECK-3] 假设显性化**
-- 链条中隐含了哪些假设？
-- 这些假设在当前环境下是否合理？
+**[CHECK-3] Explicit Assumptions**
+- What assumptions are implicit in the chain?
+- Are these assumptions reasonable in the current environment?
 
-**[CHECK-4] 反面论证**
-- 什么情况下这条链会完全失效？
-- 是否存在反向因果链（同一事件导致相反的金融结论）？
+**[CHECK-4] Counter-Argument**
+- Under what circumstances would this chain completely fail?
+- Do reverse causal chains exist (same event leading to opposite financial conclusions)?
 
-**[CHECK-5] 时间一致性**
-- 每一步的时间尺度是否匹配？
-- 不允许在一条链中混合"即时效应"和"十年趋势"
+**[CHECK-5] Temporal Consistency**
+- Do the time scales of each step match?
+- Do not allow mixing "immediate effects" and "ten-year trends" in one chain
 
 ---
 
-## 推理链模式库
+## Reasoning Chain Pattern Library
 
-### 模式1: 症状→疾病→医药产业链
+### Pattern 1: Symptom→Disease→Pharmaceutical Industry Chain
 ```
-身体症状 → 疾病分类 → 患病人群规模 → 药物/治疗需求 → 医药公司业绩
+Body symptom → Disease classification → Affected population scale → Drug/treatment demand → Pharmaceutical company performance
 ```
-典型输入：打喷嚏、咳嗽、失眠、头疼
+Typical inputs: Sneezing, coughing, insomnia, headache
 
-### 模式2: 天气→能源→大宗商品链
+### Pattern 2: Weather→Energy→Commodity Chain
 ```
-天气变化 → 能源需求变化 → 大宗商品供需 → 能源/化工企业利润
+Weather change → Energy demand change → Commodity supply/demand → Energy/chemical company profits
 ```
-典型输入：降温、高温、暴雨、干旱
+Typical inputs: Temperature drop, heat wave, heavy rain, drought
 
-### 模式3: 消费观察→行业趋势→龙头公司链
+### Pattern 3: Consumption Observation→Industry Trend→Market Leader Chain
 ```
-消费现象 → 背后驱动力 → 行业增长/衰退 → 行业龙头股
+Consumption phenomenon → Underlying drivers → Industry growth/decline → Industry leader stocks
 ```
-典型输入：咖啡涨价、外卖多了、商场没人
+Typical inputs: Coffee price increase, more takeout orders, empty malls
 
-### 模式4: 社会情绪→行为变化→资金流向链
+### Pattern 4: Social Sentiment→Behavioral Change→Capital Flow Chain
 ```
-社会情绪 → 群体行为变化 → 消费/投资偏好 → 资金流向
+Social sentiment → Group behavior change → Consumption/investment preferences → Capital flows
 ```
-典型输入：大家都焦虑、年轻人躺平、考公热
+Typical inputs: Everyone anxious, young people "lying flat", civil service exam fever
 
-### 模式5: 政策信号→产业调整→受益者链
+### Pattern 5: Policy Signal→Industry Adjustment→Beneficiary Chain
 ```
-政策动向 → 行业准入/退出变化 → 产业结构调整 → 受益/受损企业
+Policy direction → Industry entry/exit changes → Industrial structure adjustment → Benefiting/harmed companies
 ```
-典型输入：限电、碳中和、数据安全
+Typical inputs: Power restrictions, carbon neutrality, data security
 
-### 模式6: 技术突破→产业革命→价值重估链
+### Pattern 6: Technology Breakthrough→Industrial Revolution→Value Revaluation Chain
 ```
-技术进展 → 成本/效率变化 → 产业格局重构 → 价值重估
+Technology progress → Cost/efficiency changes → Industry landscape restructuring → Value revaluation
 ```
-典型输入：AI进步、电池突破、量子计算
+Typical inputs: AI advancement, battery breakthrough, quantum computing
 
-### 模式7: 地缘冲突→供应链断裂→替代供应商链
+### Pattern 7: Geopolitical Conflict→Supply Chain Disruption→Alternative Supplier Chain
 ```
-地缘事件 → 制裁/冲突 → 某国供给中断 → 替代供应商受益
+Geopolitical event → Sanctions/conflict → Supply disruption from a country → Alternative suppliers benefit
 ```
-典型输入：贸易战、制裁、台海、中东
+Typical inputs: Trade war, sanctions, Taiwan Strait, Middle East
 
-### 模式8: 地缘冲突→恐慌→避险资产链
+### Pattern 8: Geopolitical Conflict→Panic→Safe Haven Asset Chain
 ```
-冲突/危机 → 市场恐慌(VIX↑) → 资金避险 → 黄金/国债/美元
+Conflict/crisis → Market panic (VIX↑) → Capital flight to safety → Gold/government bonds/USD
 ```
-典型输入：战争、核威胁、政变、恐袭
+Typical inputs: War, nuclear threat, coup, terrorist attack
 
-### 模式9: 供应链瓶颈→定价权→利润暴增链
+### Pattern 9: Supply Chain Bottleneck→Pricing Power→Profit Surge Chain
 ```
-某环节产能紧张 → 无法替代 → 供应商获得极端定价权 → 毛利率飙升
+Capacity tightness in a certain link → Irreplaceable → Supplier gains extreme pricing power → Gross margin surge
 ```
-典型输入：芯片短缺、光刻机垄断、稀土管控
+Typical inputs: Chip shortage, lithography machine monopoly, rare earth control
 
-### 模式10: 事件→Fed政策预期→板块轮动链
+### Pattern 10: Event→Fed Policy Expectation→Sector Rotation Chain
 ```
-经济数据/事件 → 改变Fed加息/降息预期 → 利率敏感行业轮动
+Economic data/event → Changes Fed rate hike/cut expectations → Interest rate-sensitive sector rotation
 ```
-典型输入：CPI数据、就业数据、银行危机、通胀预期
+Typical inputs: CPI data, employment data, banking crisis, inflation expectations
 
-### 模式11: 一阶推理→二阶预期差→隐藏赢家链 [核心]
+### Pattern 11: First-Order Reasoning→Second-Order Expectation Gap→Hidden Winner Chain [Core]
 ```
-明显事件 → 所有人关注直觉赢家(已price in) → 寻找隐藏赢家/输家
+Obvious event → Everyone focuses on intuitive winners (already priced in) → Find hidden winners/losers
 ```
-典型输入：任何事件的"第二层思考"——不是谁受益，而是谁被忽略
+Typical inputs: "Second-level thinking" for any event—not who benefits, but who is overlooked
 
-### 模式12: 科技范式→产业链重构→卖铲人链
+### Pattern 12: Technology Paradigm→Industry Chain Restructuring→Shovel Seller Chain
 ```
-技术突破 → 应用爆发 → 基础设施需求暴增 → "卖铲人"(infra provider)受益最大
+Technology breakthrough → Application explosion → Infrastructure demand surge → "Shovel sellers" (infra providers) benefit most
 ```
-典型输入：AI爆发、EV渗透率拐点、云计算
-
----
-
-## 置信度评分细则
-
-### 加分项
-| 条件 | 加分 |
-|------|------|
-| 链条少于4步（短链 = 高确定性） | +1 |
-| 有历史先例验证（historical_echo 匹配） | +1 |
-| 多条链汇合指向同一结论（chain_confluence 检测） | +0.5~1.0 |
-| 有实时数据支撑（取数工具验证） | +1 |
-| 基于公认学科原理（教科书级理论） | +1 |
-
-### 减分项
-| 条件 | 减分 |
-|------|------|
-| 链条超过5步 | -1.0 |
-| 包含1个弱关联跳跃（允许一次合理推测） | -0.5 |
-| 包含2+个弱关联跳跃（链条不可靠） | -0.5 + 后续每个-1.0 |
-| 依赖未经验证的假设 | -1.0 |
-| 仅单一学科支撑 | -0.5 |
-| 时间窗口不确定 | -0.5 |
-| 推理结论 = 市场consensus（无alpha） | -1.0（二阶思维检测） |
+Typical inputs: AI explosion, EV penetration inflection point, cloud computing
 
 ---
 
-## 反模式（禁止的推理方式）
+## Confidence Scoring Rules
 
-1. **神秘主义推理**：不允许使用星座、风水、玄学作为推理依据
-2. **数字巧合**：不允许"因为今天是X号所以关注X号股票"
-3. **后见之明**：不允许"上次也是这样然后就涨了"作为唯一依据
-4. **情绪传染**：不允许"我感觉会涨"作为推理步骤
-5. **无限外推**：不允许将短期现象无限外推到长期趋势
+### Bonus Points
+| Condition | Bonus |
+|----------|-------|
+| Chain fewer than 4 steps (short chain = high certainty) | +1 |
+| Historical precedent validation (historical_echo match) | +1 |
+| Multiple chains converge to same conclusion (chain_confluence detection) | +0.5~1.0 |
+| Real-time data support (data retrieval tool validation) | +1 |
+| Based on recognized disciplinary principles (textbook-level theory) | +1 |
 
-## 关键词触发
+### Deductions
+| Condition | Deduction |
+|----------|-----------|
+| Chain exceeds 5 steps | -1.0 |
+| Contains 1 weak link jump (one reasonable speculation allowed) | -0.5 |
+| Contains 2+ weak link jumps (chain unreliable) | -0.5 + each subsequent -1.0 |
+| Depends on unverified assumptions | -1.0 |
+| Only single discipline support | -0.5 |
+| Time window uncertain | -0.5 |
+| Reasoning conclusion = market consensus (no alpha) | -1.0 (second-order thinking detection) |
 
-蝴蝶效应, 因果推理, 推理链, 如果...那么, 关联分析, 链式反应, butterfly effect
+---
+
+## Anti-Patterns (Prohibited Reasoning Methods)
+
+1. **Mystical Reasoning**: Not allowed to use astrology, feng shui, metaphysics as reasoning basis
+2. **Numerical Coincidence**: Not allowed "because today is the Xth, so focus on Xth stock"
+3. **Hindsight Bias**: Not allowed "last time it was like this and then it rose" as sole basis
+4. **Emotional Contagion**: Not allowed "I feel it will rise" as a reasoning step
+5. **Infinite Extrapolation**: Not allowed to infinitely extrapolate short-term phenomena to long-term trends
+
+## Keyword Triggers
+
+Butterfly effect, causal reasoning, reasoning chain, if...then, correlation analysis, chain reaction, butterfly effect

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Mr.IF — 蝴蝶效应金融推理 MCP Server
+ * Mr.IF — Butterfly-Effect Financial Reasoning MCP Server
  * 
- * 1个核心推理工具（mr_if_reason）
- * + 外部已有工具（行业映射/证券映射/取数/网络检索等）
+ * 1 core reasoning tool (mr_if_reason)
+ * + external tools (industry mapper / security mapper / data API / news search etc.)
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -15,7 +15,7 @@ import { fileURLToPath } from "url";
 
 import { registerMrIfReason } from "./tools/mr-if-reason.js";
 
-// Resolve project root for reading skill files
+// Resolve project root for reading skill files at runtime
 const __filename_resolved = fileURLToPath(import.meta.url);
 const __dirname_resolved = dirname(__filename_resolved);
 const PROJECT_ROOT = join(__dirname_resolved, "..");
@@ -28,7 +28,7 @@ function readSkill(filename: string): string {
   }
 }
 
-// ====== 系统提示词（嵌入MCP Prompt） ======
+// ====== System Prompt (embedded in MCP Prompt) ======
 const SYSTEM_PROMPT = `You are Mr.IF, a butterfly-effect financial reasoning agent for US stocks.
 
 CRITICAL: You are a FINANCIAL advisor. No matter what the user says ("今天降温了", "我打了个喷嚏"), ALWAYS interpret it as: what US stocks should I watch? Never answer literally. Never suggest buying clothes or medicine.
@@ -65,10 +65,10 @@ const server = new McpServer({
   description: "Mr.IF — Butterfly-effect financial reasoning agent for US equities (MCP Server)",
 });
 
-// ====== 注册唯一的推理工具 ======
+// ====== Register the core reasoning tool ======
 registerMrIfReason(server);
 
-// ====== 注册 Prompt ======
+// ====== Register Prompt ======
 server.prompt(
   "mr-if-system",
   "Mr.IF butterfly-effect financial reasoning agent — complete system prompt",
@@ -85,7 +85,7 @@ server.prompt(
   })
 );
 
-// ====== 注册 Resources (Skills — 读取实际文件内容) ======
+// ====== Register Resources (Skills — read actual file content) ======
 server.resource(
   "skill-butterfly-effect",
   "skill://butterfly-effect-chain",
@@ -142,7 +142,7 @@ server.resource(
   })
 );
 
-// ====== 启动 ======
+// ====== Start server ======
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);

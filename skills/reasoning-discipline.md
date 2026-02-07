@@ -1,302 +1,302 @@
 ---
 name: reasoning-discipline
-description: "推理纪律协议。5合1工具的'关卡检查员'——强制LLM在thinking中按序完成每个推理阶段，每阶段有准入条件和反幻觉门槛。防止跳步、偷懒、凭空捏造因果链。必须与mr_if_reason工具配合使用。"
+description: "Reasoning discipline protocol. The 'gate inspector' for the 5-in-1 tool—forces LLM to complete each reasoning stage sequentially in thinking, with entry conditions and anti-hallucination thresholds for each stage. Prevents skipping steps, laziness, and fabricating causal chains out of thin air. Must be used in conjunction with the mr_if_reason tool."
 version: 1.0.0
 ---
 
-# Reasoning Discipline Protocol — 推理纪律协议
+# Reasoning Discipline Protocol
 
-## 为什么需要这个协议
+## Why This Protocol Is Needed
 
-mr_if_reason 工具一次性返回了：事件分类、链条模板、历史案例、验证框架、汇合规则。
+The mr_if_reason tool returns all at once: event classification, chain templates, historical cases, validation framework, and convergence rules.
 
-如果你直接跳到结论，或者随便编几条链就去调外部工具——你的输出会是垃圾。
+If you jump directly to conclusions, or casually construct a few chains and then call external tools—your output will be garbage.
 
-**这个协议是你 thinking 阶段的强制路线图。每个阶段(Gate)必须完成，才能进入下一阶段。**
-
----
-
-## 阶段总览
-
-```
-Gate 1: 事件锚定（不许跑题）
-  ↓
-Gate 2: 链条构建（不许偷懒）
-  ↓
-Gate 3: 链条验证（不许自欺）
-  ↓
-Gate 4: 历史对照（不许无视）
-  ↓
-Gate 5: 汇合分析（不许单线思维）
-  ↓
-Gate 6: 二阶检测（不许卖共识）
-  ↓
-Gate 7: 出口检查（不许带病上线）
-  ↓
-→ 通过后才能调用外部工具（行业映射/证券映射/取数等）
-```
+**This protocol is a mandatory roadmap for your thinking phase. Each stage (Gate) must be completed before proceeding to the next.**
 
 ---
 
-## Gate 1: 事件锚定
+## Stage Overview
 
-**目的：** 确认你理解了用户说的是什么，以及你要从金融角度分析什么。
-
-**必须输出：**
 ```
-[Gate 1] 事件锚定
-- 用户原文: "..."
-- 金融解读: 用户的意思是... (永远从金融角度解读)
-- mr_if_reason 分类: {type} (是否合理？如果分类不准确，手动修正)
-- 季节语境: {season} (当前月份的季节性因素，是否与事件有交叉？)
-- 推理方向: 从 mr_if_reason 返回的方向中，选择 2-4 个最相关的
+Gate 1: Event Anchoring (no digression)
+  ↓
+Gate 2: Chain Construction (no laziness)
+  ↓
+Gate 3: Chain Validation (no self-deception)
+  ↓
+Gate 4: Historical Comparison (no ignoring)
+  ↓
+Gate 5: Convergence Analysis (no single-track thinking)
+  ↓
+Gate 6: Second-Order Detection (no selling consensus)
+  ↓
+Gate 7: Exit Check (no launching with flaws)
+  ↓
+→ Only after passing can external tools be called (industry mapping/securities mapping/data retrieval, etc.)
 ```
-
-**反幻觉检查：**
-- 你是否在用金融视角解读？如果你的"金融解读"读起来像生活建议 → 停下，重来
-- 事件分类是否准确？如果 mr_if_reason 把"特朗普发推"分类成 daily 而不是 geopolitical → 你手动修正
-- 不要添加用户没说的东西。"今天冷了"只是天气事件，不要自行脑补成"流感爆发"
 
 ---
 
-## Gate 2: 链条构建
+## Gate 1: Event Anchoring
 
-**目的：** 基于 mr_if_reason 返回的模板，构建至少 3 条完整的因果链。
+**Purpose:** Confirm that you understand what the user is saying and what you need to analyze from a financial perspective.
 
-**规则：**
-1. 使用 mr_if_reason 返回的 chain_templates，不要无视它们自己编
-2. 每条链 3-7 步，每步必须标注：
-   - 内容（这一步说的是什么）
-   - 学科依据（引用 cross-domain-reasoning 的哪个学科）
-   - 连接强度（strong / moderate / weak）
-   - 连接理由（为什么上一步能推到这一步，一句话）
-3. 最后一步必须落在具体行业或标的方向上
-4. 至少有 2 条链来自不同学科维度
-
-**必须输出：**
+**Required Output:**
 ```
-[Gate 2] 链条构建
-Chain A: {模板名}
-  Step 1: {内容} [学科] [strong] — 因为...
-  Step 2: {内容} [学科] [strong] — 因为...
+[Gate 1] Event Anchoring
+- User's original text: "..."
+- Financial interpretation: The user means... (always interpret from a financial perspective)
+- mr_if_reason classification: {type} (Is this reasonable? If classification is inaccurate, manually correct)
+- Seasonal context: {season} (Seasonal factors for the current month, do they intersect with the event?)
+- Reasoning direction: From mr_if_reason's returned directions, select 2-4 most relevant ones
+```
+
+**Anti-Hallucination Checks:**
+- Are you interpreting from a financial perspective? If your "financial interpretation" reads like life advice → stop, restart
+- Is the event classification accurate? If mr_if_reason classifies "Trump tweets" as daily instead of geopolitical → manually correct
+- Don't add things the user didn't say. "It's cold today" is just a weather event, don't fabricate it into "flu outbreak"
+
+---
+
+## Gate 2: Chain Construction
+
+**Purpose:** Based on templates returned by mr_if_reason, construct at least 3 complete causal chains.
+
+**Rules:**
+1. Use chain_templates returned by mr_if_reason, don't ignore them and make up your own
+2. Each chain has 3-7 steps, each step must be labeled with:
+   - Content (what this step says)
+   - Disciplinary basis (which discipline from cross-domain-reasoning is referenced)
+   - Connection strength (strong / moderate / weak)
+   - Connection rationale (why the previous step leads to this step, one sentence)
+3. The final step must land on a specific industry or direction
+4. At least 2 chains must come from different disciplinary dimensions
+
+**Required Output:**
+```
+[Gate 2] Chain Construction
+Chain A: {template name}
+  Step 1: {content} [discipline] [strong] — because...
+  Step 2: {content} [discipline] [strong] — because...
   ...
-  → 结论: {行业/方向}
+  → Conclusion: {industry/direction}
 
-Chain B: {模板名}
+Chain B: {template name}
   ...
 
-Chain C: {模板名}
+Chain C: {template name}
   ...
 ```
 
-**反幻觉检查：**
-- 每步的"因为..."是否能经得起追问？如果你自己都觉得勉强 → 标记为 weak
-- 是否有"量子跳跃"？即上一步到下一步之间缺了一个关键中间环节 → 补上或标记
-- 链条步数是否合理？超过5步 → 自问"中间有没有步骤可以合并？"
-- 学科引用是否真实？"心理学上说..."——真的有这个理论吗？如果你不确定 → 不引用，用常识表述
-- **最重要的：** 你是否真的在建链，还是在倒推？如果你心里已经有了"应该推荐能源股"这个结论，然后反向编了一条链 → 这是幻觉。正确的方式是：从事件出发，走到哪算哪。
+**Anti-Hallucination Checks:**
+- Can each step's "because..." withstand questioning? If you yourself feel it's forced → mark as weak
+- Are there "quantum leaps"? That is, missing a key intermediate step between the previous and next step → add it or mark it
+- Is the chain length reasonable? More than 5 steps → ask yourself "can any intermediate steps be merged?"
+- Are disciplinary references real? "Psychology says..."—does this theory actually exist? If you're unsure → don't reference it, use common sense phrasing
+- **Most important:** Are you really building chains, or reasoning backwards? If you already have the conclusion "should recommend energy stocks" in mind, then reverse-engineer a chain → this is hallucination. The correct way: start from the event, go wherever it leads.
 
 ---
 
-## Gate 3: 链条验证
+## Gate 3: Chain Validation
 
-**目的：** 用 mr_if_reason 返回的 validation framework 给每条链打分。
+**Purpose:** Score each chain using the validation framework returned by mr_if_reason.
 
-**规则：**
-1. 对每条链，逐一检查 6 个验证维度（逻辑连贯性、学科准确性、假设显性化、反面论证、时间一致性、规模合理性）
-2. 应用加分/减分规则
-3. 链条<4步 +1, 有历史先例 +1, 多链同向 +0.5~1.0
-4. 链条>5步 -1, weak link -0.5(首个), -1.0(后续), 无alpha -1
+**Rules:**
+1. For each chain, check all 6 validation dimensions one by one (logical coherence, disciplinary accuracy, explicit assumptions, counter-argument, temporal consistency, scale reasonableness)
+2. Apply bonus/deduction rules
+3. Chain <4 steps +1, has historical precedent +1, multiple chains same direction +0.5~1.0
+4. Chain >5 steps -1, weak link -0.5(first), -1.0(subsequent), no alpha -1
 
-**必须输出：**
+**Required Output:**
 ```
-[Gate 3] 链条验证
+[Gate 3] Chain Validation
 Chain A:
-  - 逻辑连贯性: [通过/有弱点] — 具体说明
-  - 学科准确性: [通过/存疑] — 具体说明
-  - 假设显性化: 隐含假设是 [X], 当前环境下 [成立/不确定/不成立]
-  - 反面论证: 如果 [Y] 发生，这条链完全失效
-  - 时间一致性: [匹配/不匹配] — 时间窗口约 [Z]
-  - 规模合理性: [合理/夸大/不足]
-  - 评分: 基础3 + [加分] - [减分] = 最终X分
-  - 判定: [可用 / 需补强 / 丢弃]
+  - Logical coherence: [pass/has weakness] — specific explanation
+  - Disciplinary accuracy: [pass/questionable] — specific explanation
+  - Explicit assumptions: Implicit assumption is [X], in current environment [holds/uncertain/doesn't hold]
+  - Counter-argument: If [Y] happens, this chain completely fails
+  - Temporal consistency: [matches/doesn't match] — time window approximately [Z]
+  - Scale reasonableness: [reasonable/exaggerated/insufficient]
+  - Score: Base 3 + [bonus] - [deduction] = Final X points
+  - Judgment: [usable / needs strengthening / discard]
 
-(Chain B, C 同样格式)
+(Chain B, C same format)
 ```
 
-**反幻觉检查：**
-- "反面论证"不能是走过场。你必须真的想出一个能让这条链失效的场景
-- 如果你给自己的链全部打了高分 → 你在自欺。至少有一条链应该有明显的弱点
-- 如果"隐含假设"你写了"无" → 不可能，任何推理都有隐含假设。重新想
-- 评分必须诚实。如果一条链得分 < 2 → 直接丢弃，不要硬用
+**Anti-Hallucination Checks:**
+- "Counter-argument" cannot be perfunctory. You must really think of a scenario that would make this chain fail
+- If you gave all your chains high scores → you're deceiving yourself. At least one chain should have obvious weaknesses
+- If you wrote "none" for "implicit assumptions" → impossible, any reasoning has implicit assumptions. Rethink
+- Scoring must be honest. If a chain scores < 2 → discard directly, don't force it
 
 ---
 
-## Gate 4: 历史对照
+## Gate 4: Historical Comparison
 
-**目的：** 将 mr_if_reason 返回的历史案例与你的链条对比。
+**Purpose:** Compare historical cases returned by mr_if_reason with your chains.
 
-**规则：**
-1. 如果有匹配的历史案例 → 对比：相同点是什么？不同点是什么？
-2. 如果结论一致 → 引用这个案例增强说服力
-3. 如果结论不一致 → 必须解释"为什么这次不同"（且大幅降低置信度）
-4. 如果没有匹配案例 → 标注"首次推理"，考虑是否需要调用网络检索工具查找
+**Rules:**
+1. If there are matching historical cases → compare: what are the similarities? What are the differences?
+2. If conclusions are consistent → cite this case to strengthen persuasiveness
+3. If conclusions are inconsistent → must explain "why this time is different" (and significantly reduce confidence)
+4. If there are no matching cases → mark as "first-time reasoning," consider whether network search tools are needed
 
-**必须输出：**
+**Required Output:**
 ```
-[Gate 4] 历史对照
-匹配案例 1: {案例名}
-  - 相似点: ...
-  - 不同点: ...
-  - 对我的推理的意义: [增强/削弱/中性]
-  - 具体影响: 对 Chain [X] 的置信度 [+1 / -1 / 不变]
+[Gate 4] Historical Comparison
+Matching case 1: {case name}
+  - Similarities: ...
+  - Differences: ...
+  - Significance for my reasoning: [strengthens/weakens/neutral]
+  - Specific impact: Confidence in Chain [X] [+1 / -1 / unchanged]
 
-(如无匹配: "无直接匹配案例。Chain [X] 标注为首次推理。考虑用网络检索补充。")
+(If no match: "No directly matching cases. Chain [X] marked as first-time reasoning. Consider supplementing with network search.")
 ```
 
-**反幻觉检查：**
-- 不要编造历史案例。只用 mr_if_reason 返回的案例 + 你确信真实存在的公开历史事件
-- "这次不同"不能随便说。如果你说了 → 必须指出具体哪个结构性因素变了
-- 不要选择性使用历史：如果一个案例同时支持你的一条链又反对另一条 → 都要说
+**Anti-Hallucination Checks:**
+- Don't fabricate historical cases. Only use cases returned by mr_if_reason + publicly known historical events you're certain are real
+- "This time is different" cannot be said casually. If you say it → must point out which specific structural factor changed
+- Don't selectively use history: if a case both supports one of your chains and opposes another → mention both
 
 ---
 
-## Gate 5: 汇合分析
+## Gate 5: Convergence Analysis
 
-**目的：** 检查多条链是否指向相同的方向，发现矛盾和增强点。
+**Purpose:** Check whether multiple chains point in the same direction, discover contradictions and reinforcement points.
 
-**规则：**
-1. 把所有验证通过(得分>=2.5)的链条放在一起
-2. 检查：哪些链指向相同行业/方向？（汇合 = 高置信）
-3. 检查：哪些链对同一标的给出矛盾方向？（冲突 = 需要裁决）
-4. 汇合规则：2链同向 +0.5, 3链同向 +1.0
+**Rules:**
+1. Put all validated chains (score >= 2.5) together
+2. Check: which chains point to the same industry/direction? (convergence = high confidence)
+3. Check: which chains give contradictory directions for the same target? (conflict = needs resolution)
+4. Convergence rules: 2 chains same direction +0.5, 3 chains same direction +1.0
 
-**必须输出：**
+**Required Output:**
 ```
-[Gate 5] 汇合分析
-汇合点:
-  - {行业/方向} ← Chain A + Chain C 同向看多 → 置信度+0.5
-冲突点:
-  - {行业/方向} ← Chain A 看多 vs Chain B 看空 → 标记 mixed，裁决依据: ...
-丢弃:
-  - Chain X 得分过低，已丢弃
+[Gate 5] Convergence Analysis
+Convergence points:
+  - {industry/direction} ← Chain A + Chain C both bullish → confidence +0.5
+Conflict points:
+  - {industry/direction} ← Chain A bullish vs Chain B bearish → mark mixed, resolution basis: ...
+Discarded:
+  - Chain X score too low, discarded
 
-净方向:
-  - 看多: {行业列表} (置信度: H/M/L)
-  - 看空: {行业列表} (置信度: H/M/L)
-  - 中性/混合: {行业列表} (原因)
+Net direction:
+  - Bullish: {industry list} (confidence: H/M/L)
+  - Bearish: {industry list} (confidence: H/M/L)
+  - Neutral/mixed: {industry list} (reason)
 ```
 
-**反幻觉检查：**
-- 如果你的所有链条全部指向同一方向 → 你可能有确认偏差。回去 Gate 2 检查是否遗漏了反向链
-- 冲突不是坏事，冲突是真实的。不要为了简洁而忽略冲突
-- "净方向"必须只包含有链条支撑的方向。不能凭空加入"我觉得还可以看看XX"
+**Anti-Hallucination Checks:**
+- If all your chains point in the same direction → you may have confirmation bias. Go back to Gate 2 to check if you missed reverse chains
+- Conflicts are not bad, conflicts are real. Don't ignore conflicts for the sake of simplicity
+- "Net direction" must only include directions supported by chains. Cannot arbitrarily add "I think we can also look at XX"
 
 ---
 
-## Gate 6: 二阶检测
+## Gate 6: Second-Order Detection
 
-**目的：** 确认你的推理不是在卖市场共识。
+**Purpose:** Confirm that your reasoning is not selling market consensus.
 
-**规则（来自 second-order-thinking skill）：**
-1. 对每个"净方向"，问：这个结论是市场共识吗？
-2. 如果是共识 → 你的 alpha 在哪？找隐藏赢家/输家
-3. 如果不是共识 → 你为什么比市场聪明？理由是什么？
-4. 寻找时间错配：市场短期过度反应了什么？长期低估了什么？
+**Rules (from second-order-thinking skill):**
+1. For each "net direction," ask: is this conclusion market consensus?
+2. If it's consensus → where is your alpha? Find hidden winners/losers
+3. If it's not consensus → why are you smarter than the market? What's the reason?
+4. Look for temporal mismatches: what is the market overreacting to short-term? What is it underestimating long-term?
 
-**必须输出：**
+**Required Output:**
 ```
-[Gate 6] 二阶检测
-结论 1: {看多 XX}
-  - 市场共识？ [是/否/部分]
-  - 如果是共识: 我的 edge 在于 [...]
-  - 隐藏赢家: [不那么明显的受益者]
-  - 隐藏输家: [不那么明显的受损者]
-  - 时间错配: [短期过度反应?  / 长期被低估?]
+[Gate 6] Second-Order Detection
+Conclusion 1: {bullish on XX}
+  - Market consensus? [yes/no/partial]
+  - If consensus: My edge lies in [...]
+  - Hidden winners: [less obvious beneficiaries]
+  - Hidden losers: [less obvious victims]
+  - Temporal mismatch: [short-term overreaction? / long-term underestimated?]
 
-(对每个净方向重复)
+(Repeat for each net direction)
 ```
 
-**反幻觉检查：**
-- 如果你写了"市场共识：否"但你的推理其实很容易被任何分析师想到 → 你在骗自己
-- "隐藏赢家"必须有逻辑链支撑（即使只有2步），不能随便联想
-- 如果每个方向你都写了"否，我的推理很独特" → 你过于自信了。至少承认部分已被定价
+**Anti-Hallucination Checks:**
+- If you wrote "market consensus: no" but your reasoning could easily be thought of by any analyst → you're deceiving yourself
+- "Hidden winners" must have logical chain support (even if only 2 steps), cannot be arbitrary associations
+- If for every direction you wrote "no, my reasoning is unique" → you're overconfident. At least acknowledge that some has been priced in
 
 ---
 
-## Gate 7: 出口检查（质量门）
+## Gate 7: Exit Check (Quality Gate)
 
-**在调用任何外部工具之前，必须通过以下检查：**
+**Before calling any external tools, you must pass the following checks:**
 
 ```
-[Gate 7] 出口检查
-□ 1. 我构建了至少 3 条链吗？ (少于3条 → 回 Gate 2)
-□ 2. 每条链都有学科依据吗？ (有无依据的步骤 → 标记 weak)
-□ 3. 至少 2 条链来自不同学科维度吗？ (全部同学科 → 回 Gate 2 补)
-□ 4. 我诚实地做了反面论证吗？ (走过场 → 回 Gate 3)
-□ 5. 我检查了历史案例的一致/矛盾吗？ (跳过了 → 回 Gate 4)
-□ 6. 汇合分析有结论吗？ (没有净方向 → 回 Gate 5)
-□ 7. 二阶检测做了吗？ (全跳过 → 回 Gate 6)
-□ 8. 我有具体的行业方向可以给行业映射工具吗？ (没有 → 推理不充分)
-□ 9. 我的推理中没有编造的学科理论/历史事件吗？ (不确定 → 删除或标注不确定)
-□ 10. 最终保留的链条至少有 1 条得分 >= 3 吗？ (全低分 → 降低整体置信度，向用户坦诚)
+[Gate 7] Exit Check
+□ 1. Did I construct at least 3 chains? (Fewer than 3 → return to Gate 2)
+□ 2. Does each chain have disciplinary basis? (Steps without basis → mark weak)
+□ 3. Do at least 2 chains come from different disciplinary dimensions? (All same discipline → return to Gate 2 to supplement)
+□ 4. Did I honestly perform counter-arguments? (Perfunctory → return to Gate 3)
+□ 5. Did I check historical case consistency/contradictions? (Skipped → return to Gate 4)
+□ 6. Does convergence analysis have conclusions? (No net direction → return to Gate 5)
+□ 7. Was second-order detection performed? (All skipped → return to Gate 6)
+□ 8. Do I have specific industry directions to give to the industry mapping tool? (No → reasoning insufficient)
+□ 9. Are there no fabricated disciplinary theories/historical events in my reasoning? (Uncertain → delete or mark uncertain)
+□ 10. Do at least 1 of the final retained chains score >= 3? (All low scores → reduce overall confidence, be honest with user)
 ```
 
-**全部通过 → 进入外部工具调用阶段**
-**任何一项未通过 → 回到对应 Gate 补完**
+**All passed → proceed to external tool calling phase**
+**Any item not passed → return to corresponding Gate to complete**
 
 ---
 
-## 反幻觉总原则
+## Anti-Hallucination General Principles
 
-### 原则1: 不确定就说不确定
-宁可说"这条链有一步我不太确定"，也不要编一个听起来很像的理论。你的用户是聪明人，他能接受不确定性，但他不能接受你胡编。
+### Principle 1: If uncertain, say uncertain
+Better to say "there's one step in this chain I'm not quite sure about" than to fabricate a theory that sounds plausible. Your user is smart, they can accept uncertainty, but they cannot accept you making things up.
 
-### 原则2: 不能倒推
-正确：事件 → 推理 → 看到哪算到哪
-错误：心里已经想好推荐什么 → 倒着编一条链来合理化
-检测方法：如果你发现自己在想"怎么把这条链连到NVDA" → 你在倒推
+### Principle 2: No reverse reasoning
+Correct: Event → reasoning → go wherever it leads
+Wrong: Already decided what to recommend in mind → reverse-engineer a chain to rationalize
+Detection method: If you find yourself thinking "how do I connect this chain to NVDA" → you're reverse reasoning
 
-### 原则3: 学科引用必须真实
-可以："根据供需理论（经济学基本原理），供给减少+需求刚性→价格上涨"
-不可以："根据克虏伯热力学第三扩展定律..."（不存在的理论）
-不确定的处理：改用朴素表述 "常识上看..." "一般来说..."
+### Principle 3: Disciplinary references must be real
+OK: "According to supply and demand theory (basic economic principle), supply decrease + rigid demand → price increase"
+Not OK: "According to Krupp's third extended law of thermodynamics..." (non-existent theory)
+Uncertain handling: Use plain language instead "common sense suggests..." "generally speaking..."
 
-### 原则4: 数字必须有来源
-可以："美国天然气库存目前低于5年均值约15%（EIA数据）"
-可以："天然气库存通常在冬季消耗，低于均值15%是看涨信号（引用cross-domain-reasoning）"
-不可以："天然气库存低于均值43.7%"（如果你不确定具体数字，别编）
-允许："天然气库存可能低于均值（需要通过取数工具确认）" → 然后真的去确认
+### Principle 4: Numbers must have sources
+OK: "US natural gas inventories are currently about 15% below the 5-year average (EIA data)"
+OK: "Natural gas inventories typically deplete in winter, 15% below average is a bullish signal (citing cross-domain-reasoning)"
+Not OK: "Natural gas inventories are 43.7% below average" (if you're not sure of the specific number, don't make it up)
+Allowed: "Natural gas inventories may be below average (needs confirmation via data retrieval tool)" → then actually confirm it
 
-### 原则5: 承认推理的边界
-每条链都有一个"合理推测"的边界。超过这个边界就是联想而不是推理。
-标记方法：当你觉得某一步"这个连接有点远" → 标注 [speculative]
-3步合理推理 > 5步包含投机的链条
-宁短勿长，宁少勿烂
+### Principle 5: Acknowledge reasoning boundaries
+Each chain has a boundary of "reasonable inference." Beyond this boundary is association rather than reasoning.
+Marking method: When you feel a step "this connection is a bit far" → mark [speculative]
+3 steps of reasonable reasoning > 5 steps including speculation
+Better short than long, better few than many bad ones
 
 ---
 
-## 与其他 Skill 的协作关系
+## Collaboration with Other Skills
 
 ```
-mr_if_reason 工具返回 → 触发本协议
+mr_if_reason tool returns → triggers this protocol
   │
-  ├─ Gate 2 链条构建 → 参考 butterfly-effect-chain.md 的模式库和三定律
+  ├─ Gate 2 chain construction → reference butterfly-effect-chain.md's pattern library and three laws
   │
-  ├─ Gate 2-3 学科引用 → 参考 cross-domain-reasoning.md 的学科手册和桥接规则
-  │                      特别注意"量化锚点"和"常见错误"
+  ├─ Gate 2-3 disciplinary references → reference cross-domain-reasoning.md's discipline manual and bridging rules
+  │                      Pay special attention to "quantitative anchors" and "common errors"
   │
-  ├─ Gate 3 验证框架 → 使用 mr_if_reason 返回的评分维度
-  │                    + cross-domain-reasoning.md 的交叉验证框架
+  ├─ Gate 3 validation framework → use scoring dimensions returned by mr_if_reason
+  │                    + cross-domain-reasoning.md's cross-validation framework
   │
-  ├─ Gate 6 二阶检测 → 参考 second-order-thinking.md 的5个检测工具
+  ├─ Gate 6 second-order detection → reference second-order-thinking.md's 5 detection tools
   │
-  └─ Gate 7 出口检查 → 所有 skill 的综合质量门
+  └─ Gate 7 exit check → comprehensive quality gate for all skills
 ```
 
 ---
 
-## 关键词触发
+## Keyword Triggers
 
-推理纪律, 推理协议, 反幻觉, 质量检查, Gate, 链条验证, 出口检查,
+Reasoning discipline, reasoning protocol, anti-hallucination, quality check, Gate, chain validation, exit check,
 reasoning discipline, anti-hallucination, quality gate, checkpoint
