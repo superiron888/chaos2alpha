@@ -1,7 +1,7 @@
 {
-  "name": "mr-if-mcp-server",
+  "name": "mr-if",
   "version": "1.0.0",
-  "description": "Mr.IF — 蝴蝶效应金融推理 MCP Server",
+  "description": "From butterfly wings to market swings — a causal-reasoning AI agent that traces everyday events to US equity signals via MCP",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
@@ -12,9 +12,15 @@
   },
   "keywords": [
     "mcp",
+    "ai-agent",
     "finance",
+    "causal-reasoning",
     "butterfly-effect",
-    "causal-reasoning"
+    "us-equities",
+    "multi-disciplinary",
+    "model-context-protocol",
+    "llm-tools",
+    "financial-analysis"
   ],
   "license": "MIT",
   "dependencies": {
