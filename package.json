@@ -1,5 +1,5 @@
 {
-  "name": "mr-if",
+  "name": "predictionfromdailyevent",
   "version": "1.0.0",
   "description": "From butterfly wings to market swings — a causal-reasoning AI agent that traces everyday events to US equity signals via MCP",
   "type": "module",
