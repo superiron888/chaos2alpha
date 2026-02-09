@@ -35,14 +35,15 @@ const EVENT_TYPES = {
   weather: {
     name: "Weather & Climate / 天气气候",
     keywords: ["cold", "hot", "rain", "snow", "hurricane", "drought", "flood", "heatwave", "freeze", "wildfire", "tornado", "blizzard", "typhoon", "smog",
-               "冷", "热", "下雨", "下雪", "飓风", "干旱", "洪水", "高温", "降温", "山火", "寒潮", "暴风雪", "台风", "雾霾", "酷暑", "升温", "寒流", "暴雨"],
+               "冷", "热", "下雨", "下雪", "飓风", "干旱", "洪水", "高温", "降温", "山火", "寒潮", "暴风雪", "台风", "雾霾", "酷暑", "寒流", "暴雨"],
     reasoning_angles: ["Energy demand", "Agriculture impact", "Consumer behavior shift", "Infrastructure damage", "Logistics disruption", "Insurance claims"],
   },
   economic: {
     name: "Economic Signal / 经济信号",
     keywords: ["inflation", "deflation", "layoff", "hiring", "IPO", "bankruptcy", "interest rate", "Fed", "CPI", "GDP", "unemployment", "tariff",
-               "涨价", "降价", "裁员", "招聘", "上市", "通胀", "利率", "美联储", "关税"],
-    reasoning_angles: ["Supply-demand shift", "Industry chain transmission", "Fed policy expectation", "Capital flow", "Sector rotation"],
+               "housing", "mortgage", "rent", "home sales",
+               "涨价", "降价", "裁员", "招聘", "上市", "通胀", "利率", "美联储", "关税", "房价", "房贷", "租金", "房地产"],
+    reasoning_angles: ["Supply-demand shift", "Industry chain transmission", "Fed policy expectation", "Capital flow", "Sector rotation", "Housing cycle"],
   },
   social: {
     name: "Social Trend / 社会现象",
@@ -84,7 +85,10 @@ const EVENT_TYPES = {
     name: "Market Structure Event / 市场结构事件",
     keywords: ["VIX", "yield curve", "inversion", "credit spread", "liquidity", "margin call", "short squeeze", "gamma squeeze",
                "put/call ratio", "fund flow", "risk-off", "risk-on", "sell-off", "melt-up", "volatility", "bear market", "bull market", "correction",
-               "收益率", "倒挂", "信用利差", "流动性", "爆仓", "逼空", "波动率", "熊市", "牛市", "崩盘", "暴跌", "暴涨", "恐慌指数"],
+               "bubble", "crowded", "overvalued", "overweight",
+               "Treasury", "10Y", "2Y", "bond yield", "rate cut", "rate hike",
+               "收益率", "倒挂", "信用利差", "流动性", "爆仓", "逼空", "波动率", "熊市", "牛市", "崩盘", "恐慌指数", "大跌", "大涨", "回调",
+               "泡沫", "拥挤", "过热", "高估", "国债", "美债", "利率", "降息", "加息"],
     reasoning_angles: ["Regime shift", "Sector rotation", "Defensive vs cyclical", "Volatility arbitrage", "Credit contagion", "Institutional positioning"],
   },
   corporate_event: {
@@ -97,8 +101,8 @@ const EVENT_TYPES = {
   fx_commodity: {
     name: "FX & Commodity Cycle / 汇率与商品周期",
     keywords: ["dollar", "DXY", "yuan", "yen", "euro", "forex", "currency", "gold price", "oil price", "copper", "lithium", "rare earth",
-               "iron ore", "wheat price", "commodity", "OPEC",
-               "美元", "汇率", "人民币", "日元", "欧元", "黄金价格", "油价", "铜价", "锂价", "稀土", "铁矿石", "大宗商品"],
+               "iron ore", "wheat price", "commodity", "OPEC", "crude", "natural gas", "gold",
+               "美元", "汇率", "人民币", "日元", "欧元", "黄金价格", "油价", "铜价", "锂价", "稀土", "铁矿石", "大宗商品", "暴跌", "暴涨", "黄金", "原油", "天然气"],
     reasoning_angles: ["Export/import winners", "Commodity cycle positioning", "Currency hedging", "Inflation transmission", "Resource nationalism"],
   },
 } as const;
@@ -787,6 +791,153 @@ function searchCases(
 }
 
 // ======================================================================
+// Section 3.5: Dynamic Historical Search Query Generator (NEW v3.1)
+// ======================================================================
+
+const SEARCH_QUERY_TEMPLATES: Record<string, string[]> = {
+  physiological: [
+    '"{keyword}" flu season US stock market impact historical',
+    '"{keyword}" epidemic outbreak stock market winners losers',
+    'CDC flu surge {year_range} stock market pharma reaction',
+  ],
+  weather: [
+    '"{keyword}" weather event US stock market impact',
+    '"{keyword}" energy prices natural gas oil {year_range}',
+    'extreme weather {keyword} stock market historical precedent',
+  ],
+  economic: [
+    '"{keyword}" US stock market historical reaction',
+    '"{keyword}" Fed policy stock market sector rotation',
+    '"{keyword}" economic indicator stock market impact {year_range}',
+  ],
+  geopolitical: [
+    '"{keyword}" geopolitical event stock market impact',
+    '"{keyword}" sanctions trade war stock market historical',
+    '"{keyword}" safe haven assets gold treasury defense stocks',
+  ],
+  technology: [
+    '"{keyword}" technology disruption stock market winners',
+    '"{keyword}" tech paradigm shift stock market historical',
+    '"{keyword}" semiconductor AI chip stock market impact',
+  ],
+  policy: [
+    '"{keyword}" regulation policy US stock market impact',
+    '"{keyword}" government policy sector winners losers historical',
+  ],
+  market_event: [
+    '"{keyword}" stock market historical precedent outcome',
+    '"{keyword}" market signal sector rotation playbook',
+    '"{keyword}" historical frequency recession probability stocks',
+  ],
+  corporate_event: [
+    '"{keyword}" earnings surprise stock market sector reaction',
+    '"{keyword}" bellwether earnings read-through sympathy stocks',
+    '"{keyword}" corporate event stock market precedent',
+  ],
+  fx_commodity: [
+    '"{keyword}" commodity price stock market impact historical',
+    '"{keyword}" dollar FX currency stock market reaction',
+    '"{keyword}" commodity cycle stock market winners losers',
+  ],
+  nature: [
+    '"{keyword}" natural disaster stock market impact',
+    '"{keyword}" supply chain disruption stock market historical',
+  ],
+  social: [
+    '"{keyword}" social trend consumer behavior stock market',
+    '"{keyword}" demographic shift investment opportunity historical',
+  ],
+  daily: [
+    '"{keyword}" consumer trend stock market signal',
+  ],
+};
+
+function generateDynamicSearchQueries(
+  primaryType: string,
+  secondaryTypes: string[],
+  matchedKeywords: string[],
+  userInput: string,
+  isFinancialEvent: boolean,
+): string[] {
+  const queries: string[] = [];
+  const yearRange = "2020-2026";
+
+  // Pick top 2 most distinctive keywords (prefer longer/more specific ones)
+  const sortedKw = [...matchedKeywords]
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 2);
+
+  // If no matched keywords, extract key phrases from user input
+  const keyPhrases = sortedKw.length > 0
+    ? sortedKw
+    : userInput.split(/[\s,，。！？]+/).filter(w => w.length > 1).slice(0, 2);
+
+  // Get templates for primary type
+  const templates = SEARCH_QUERY_TEMPLATES[primaryType] || SEARCH_QUERY_TEMPLATES["daily"]!;
+
+  for (const tpl of templates) {
+    for (const kw of keyPhrases) {
+      const q = tpl
+        .replace("{keyword}", kw)
+        .replace("{year_range}", yearRange);
+      queries.push(q);
+    }
+  }
+
+  // Add one secondary-type query if exists
+  if (secondaryTypes.length > 0) {
+    const secTemplates = SEARCH_QUERY_TEMPLATES[secondaryTypes[0]];
+    if (secTemplates && secTemplates[0] && keyPhrases[0]) {
+      queries.push(
+        secTemplates[0].replace("{keyword}", keyPhrases[0]).replace("{year_range}", yearRange)
+      );
+    }
+  }
+
+  // Add a direct user-input search for novelty
+  if (isFinancialEvent) {
+    queries.push(`"${userInput}" stock market historical precedent what happened next`);
+  } else {
+    queries.push(`"${userInput}" US stock market impact similar event history`);
+  }
+
+  // Deduplicate and limit to 4
+  return [...new Set(queries)].slice(0, 4);
+}
+
+function buildDynamicSearchSection(
+  needed: boolean,
+  optional: boolean,
+  queries: string[],
+  bestStaticScore: number,
+): string {
+  if (!needed && !optional) {
+    // Strong static match — dynamic search is low priority
+    return `## 4.5 Dynamic Historical Search [OPTIONAL]
+Static precedents above have strong relevance (score: ${bestStaticScore}). Dynamic search is optional but can supplement with more recent cases.
+If you have time, pick ONE query from below and use 网络检索工具:
+- ${queries[0] || "N/A"}`;
+  }
+
+  const urgency = needed
+    ? `**[STRONGLY RECOMMENDED]** Static precedent match is weak (best score: ${bestStaticScore}). Use 网络检索工具 to search for historical precedents to strengthen your analysis.`
+    : `**[RECOMMENDED]** Static match is moderate (best score: ${bestStaticScore}). Dynamic search will improve historical grounding.`;
+
+  return `## 4.5 Dynamic Historical Search ${needed ? "[STRONGLY RECOMMENDED]" : "[RECOMMENDED]"}
+${urgency}
+
+**Search queries** (use 网络检索工具 with 1-2 of these):
+${queries.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+
+**How to use search results** (ref: historical-precedent-search skill):
+1. Look for: event trigger, market reaction, timeline, which sectors/tickers moved, and what lesson was learned
+2. Evaluate relevance: Does the historical event match the current one in (a) mechanism, (b) magnitude, (c) macro context?
+3. Extract: Ticker moves, percentage changes, time-to-impact, and whether the reaction was sustained or reverted
+4. Discount: Old cases (>10yr) need a "world has changed" check. Cases from different macro regimes (e.g., ZIRP vs high-rate) may not apply.
+5. Cite: When referencing in your response, say "In [year], when [similar event], [ticker] moved [X%] over [timeframe]"`;
+}
+
+// ======================================================================
 // Section 4: Discipline Knowledge (unchanged)
 // ======================================================================
 
@@ -1144,9 +1295,11 @@ function getQuantAnchors(eventTypes: string[]): QuantAnchor[] {
 export function registerMrIfReason(server: McpServer): void {
   server.tool(
     "mr_if_reason",
-    `Mr.IF butterfly-effect reasoning engine v3. Input any everyday event, returns: event classification, chain templates WITH pre-scores (0-100) and ticker seeds, event interaction effects, enhanced historical precedents, structured quantitative anchors, discipline knowledge, and complexity-based reasoning depth recommendation.
-This is Mr.IF's core reasoning tool — MUST be called BEFORE all other tools.
-User says "it's getting cold" → not asking to buy a jacket, asking which US stocks to watch. ALWAYS interpret user input from a financial perspective.`,
+    `Mr.IF financial reasoning engine v3.1. Handles TWO types of input:
+1) Daily-life events ("everyone's sick", "it's getting cold") → butterfly-effect cross-domain reasoning
+2) Financial events ("yield curve inverted", "NVDA earnings beat", "oil price crashed") → financial-transmission channel mapping (sector rotation, earnings read-through, macro repricing, contagion, FX pass-through)
+Returns: event classification, chain templates WITH pre-scores (0-100) and ticker seeds, event interaction effects, enhanced historical precedents, structured quantitative anchors, discipline knowledge, and complexity-based reasoning depth recommendation.
+This is Mr.IF's core reasoning tool — MUST be called FIRST before all other tools. ALWAYS interpret user input from a financial perspective.`,
     {
       user_input: z.string().describe("User's raw input, e.g. 'everyone's been sick lately', 'Trump is at it again'"),
       current_date: z.string().optional().describe("Current date YYYY-MM-DD"),
@@ -1252,6 +1405,21 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
           ).join("\n\n")
         : "No direct historical match. This is novel territory — build chains carefully and note the absence of precedent.";
 
+      // Determine reasoning mode (moved up for dynamic search dependency)
+      const FINANCIAL_EVENT_TYPES = new Set(["market_event", "corporate_event", "fx_commodity"]);
+      const isFinancialEvent = FINANCIAL_EVENT_TYPES.has(cls.primary_type);
+
+      // --- Dynamic Historical Search ---
+      const bestHistScore = histMatches.length > 0 ? histMatches[0].score : 0;
+      const dynamicSearchNeeded = bestHistScore < 8; // weak or no match
+      const dynamicSearchOptional = bestHistScore >= 8 && bestHistScore < 15; // decent but not great
+      const dynamicSearchQueries = generateDynamicSearchQueries(
+        cls.primary_type, cls.secondary_types, cls.matched_keywords, user_input, isFinancialEvent
+      );
+      const dynamicSearchSection = buildDynamicSearchSection(
+        dynamicSearchNeeded, dynamicSearchOptional, dynamicSearchQueries, bestHistScore
+      );
+
       const anchorSection = anchors.length > 0
         ? anchors.map(a => `| ${a.metric} | ${a.value} | ${a.source} | ${a.usage} |`).join("\n")
         : "No structured anchors for this event type.";
@@ -1266,8 +1434,11 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
 - **Narrative arc**: ${weakChains.length > 0 && strongChains.length > 0
   ? `"Most people think ${weakChains[0].name.split("→")[0].trim()} — but the real play is ${strongChains[0].name.split("→")[0].trim()}"`
   : "Follow chain score ranking for narrative priority."}`;
+      const reasoningModeNote = isFinancialEvent
+        ? `- **REASONING MODE: FINANCIAL TRANSMISSION** — This is a direct financial event. Use the chain templates below as transmission channel mappings (NOT multi-step butterfly chains). Apply the 3-Question Test: (1) Already priced in? (2) What's the second derivative? (3) Where is consensus wrong?`
+        : `- **REASONING MODE: BUTTERFLY EFFECT** — This is a daily-life/non-financial event. Build cross-domain causal chains from the event to financial implications.`;
 
-      const output = `# Mr.IF Reasoning Engine Output v3
+      const output = `# Mr.IF Reasoning Engine Output v3.1
 
 ## 1. Event Classification
 - User input: "${user_input}"
@@ -1278,6 +1449,7 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
 - Seasonal context: ${seasonContext}
 - Complexity: **${complexity}**
 - Second-order recommended: **${secondOrder ? "yes — your conclusion likely has a consensus first-order reaction, look for what the market is missing" : "no — focus on building solid chains rather than forcing contrarian angles"}**
+${reasoningModeNote}
 
 ${interactionSection}## 2. Reasoning Directions
 ${allDirections.map((d, i) => `${i + 1}. ${d}`).join("\n")}
@@ -1289,6 +1461,8 @@ You may supplement or adjust these templates. Use scores to prioritize: STRONG c
 
 ## 4. Historical Precedents (Enhanced)
 ${histSection}
+
+${dynamicSearchSection}
 
 ## 5. Quantitative Anchors
 | Metric | Value | Source | How to Use |

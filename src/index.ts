@@ -183,6 +183,20 @@ server.resource(
   })
 );
 
+server.resource(
+  "skill-historical-precedent-search",
+  "skill://historical-precedent-search",
+  async (uri) => ({
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: "text/markdown",
+        text: readSkill("historical-precedent-search.md"),
+      },
+    ],
+  })
+);
+
 // ====== Start server ======
 async function main() {
   const transport = new StdioServerTransport();

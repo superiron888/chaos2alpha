@@ -73,17 +73,29 @@ For every financial event input, answer these three questions before making reco
 | DXY extreme (>110) | Medium | 1-2 quarters for EPS impact | ~25% |
 | OPEC cut announcement | Medium | Immediate to 3 months | ~20% (compliance varies) |
 
+## How This Skill Works with mr_if_reason Tool Output
+
+When `mr_if_reason` classifies a financial event, it returns chain templates (e.g., `yield_curve_to_playbook`, `earnings_to_sector`, `fx_to_trade`). These templates ARE transmission mappings — use them as your starting framework. You should:
+
+1. **Use the tool's chain templates as your transmission channels** — they already map the event to sectors and tickers
+2. **Supplement with additional channels from this skill** that the tool may not have covered
+3. **Apply the 3-Question Test** (priced in? second derivative? consensus wrong?) on top of the tool's output
+4. **Use the tool's quantitative anchors** to populate your magnitude and probability estimates
+
+Do NOT ignore the tool's templates — they are your foundation. This skill adds the analytical lens on top.
+
 ## Anti-Patterns (Do NOT Do This)
 
-- [WRONG] Treat financial events like daily events — don't build 5-step butterfly chains for "yield curve inverted." It IS the financial event. Go directly to transmission mapping.
+- [WRONG] Build long cross-domain butterfly chains for financial events — "yield curve inverted" doesn't need a 5-step chain from meteorology. The tool's financial templates already map the transmission directly. Use them.
 - [WRONG] Ignore the "priced in" question — financial markets process financial information much faster than they process daily-life observations.
 - [WRONG] Single-channel thinking — a financial event always propagates through multiple channels. Map at least 2-3.
 - [WRONG] Confuse signal with noise — a single day's VIX spike is noise; sustained VIX >25 for 2+ weeks is signal.
 - [WRONG] Treat all earnings beats equally — a 1% beat on lowered expectations is completely different from a 10% beat on raised expectations.
+- [WRONG] Ignore tool output — the mr_if_reason tool returns pre-scored templates, ticker seeds, and quantitative anchors specifically designed for financial events. Always start from these.
 
 ## Integration with Other Skills
 
 - Use **quantitative-reasoning** to assign magnitudes and probabilities to each transmission channel
 - Use **second-order-thinking** to find the contrarian/hidden-winner angle
 - Use **reasoning-discipline** to determine whether this event warrants light/medium/heavy analysis
-- The butterfly-effect chain skill is LESS relevant for direct financial events — transmission mapping replaces it
+- The **butterfly-effect-chain** skill is less relevant for direct financial events — the tool's financial templates and this skill's transmission channels serve the same purpose more efficiently
