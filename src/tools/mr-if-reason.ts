@@ -175,6 +175,10 @@ interface ChainTemplate {
   consensus_level: "high" | "medium" | "low";
   revenue_materiality: "high" | "medium" | "low";
   seasonal_peak_months: number[];
+  // v3.1 financial-event fields (optional — only for financial templates)
+  time_horizon?: string;
+  priced_in_risk?: string;
+  key_question?: string;
 }
 
 const CHAIN_TEMPLATES: Record<string, ChainTemplate> = {
@@ -399,6 +403,9 @@ const CHAIN_TEMPLATES: Record<string, ChainTemplate> = {
     consensus_level: "medium",
     revenue_materiality: "high",
     seasonal_peak_months: [1, 2, 4, 5, 7, 8, 10, 11],
+    time_horizon: "0-5 trading days for sympathy moves; 60+ days for post-earnings drift (PEAD)",
+    priced_in_risk: "HIGH if bellwether was widely expected to beat — check whisper numbers vs actual. Priced-in beats often trigger 'sell the news.'",
+    key_question: "Is this a genuine demand signal for the entire sector, or company-specific execution? What does guidance revision say about the INDUSTRY outlook?",
   },
   yield_curve_to_playbook: {
     name: "Yield Curve Signal → Macro Playbook",
@@ -412,6 +419,9 @@ const CHAIN_TEMPLATES: Record<string, ChainTemplate> = {
     consensus_level: "high",
     revenue_materiality: "high",
     seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    time_horizon: "Immediate rotation (0-5 days); recession signal lead time 6-24 months (median ~14 months)",
+    priced_in_risk: "MEDIUM — inversion is widely tracked, but timing is imprecise. The steepening AFTER inversion (Fed starts cutting) is less watched and more actionable.",
+    key_question: "Is this the initial inversion, or re-steepening from inverted (the real recession alarm)? Does the Fed pivot soon (2019 playbook: SPY +29% despite inversion)?",
   },
   credit_to_contagion: {
     name: "Credit Event → Contagion Mapping",
@@ -425,6 +435,9 @@ const CHAIN_TEMPLATES: Record<string, ChainTemplate> = {
     consensus_level: "low",
     revenue_materiality: "high",
     seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    time_horizon: "Acute phase: 1-2 weeks. Contagion spread: 1-3 months. Recovery trades: 3-6 months post-panic",
+    priced_in_risk: "LOW — credit events are surprises by nature. But first-order short targets (e.g., regional banks) may become crowded shorts quickly.",
+    key_question: "Is this idiosyncratic (one company) or systemic (sector-wide)? How wide is counterparty exposure? Is the Fed likely to backstop?",
   },
   fx_to_trade: {
     name: "FX/Commodity Shift → Trade Winners & Losers",
@@ -438,6 +451,9 @@ const CHAIN_TEMPLATES: Record<string, ChainTemplate> = {
     consensus_level: "medium",
     revenue_materiality: "high",
     seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    time_horizon: "FX moves take 1-2 quarters to flow through earnings (hedging lag). Commodity moves hit immediately for unhedged producers.",
+    priced_in_risk: "MEDIUM — directional moves are tracked, but EPS impact magnitude usually surprises. FX hedging lags 1-2 quarters.",
+    key_question: "Is the FX/commodity move driven by rates (temporary, mean-reverting) or structural shift (persistent)? Who is hedged and who is exposed?",
   },
   housing_to_cycle: {
     name: "Housing Signal → Economic Cycle Positioning",
@@ -451,6 +467,9 @@ const CHAIN_TEMPLATES: Record<string, ChainTemplate> = {
     consensus_level: "medium",
     revenue_materiality: "high",
     seasonal_peak_months: [3, 4, 5, 6, 9, 10],
+    time_horizon: "Leading indicator: 2-3 months of consistent data needed for cycle confirmation. Homebuilder stocks often front-run data by 3-6 months.",
+    priced_in_risk: "LOW to MEDIUM — housing data is released with lag. Market often under-reacts to inflection points initially.",
+    key_question: "Is this a cyclical inflection (rates driving) or a one-month data anomaly? What does mortgage rate trajectory suggest for sustained demand?",
   },
   narrative_to_crowding: {
     name: "Crowded Narrative → Contrarian Opportunity",
@@ -464,6 +483,9 @@ const CHAIN_TEMPLATES: Record<string, ChainTemplate> = {
     consensus_level: "low",
     revenue_materiality: "high",
     seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    time_horizon: "Crowding unwinds in 1-3 months when catalyst triggers. Timing is the hardest part — can be early for weeks.",
+    priced_in_risk: "By definition HIGH — the crowded narrative IS the priced-in trade. The opportunity is the REVERSAL.",
+    key_question: "What catalyst could trigger the unwind? How crowded is positioning (short interest, fund flows, options skew)?",
   },
 };
 
@@ -1356,6 +1378,10 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
           ticker_seeds: tpl.ticker_seeds,
           magnitude_range: tpl.magnitude_range,
           score: scoreResult,
+          // v3.1 financial fields (may be undefined for daily-event templates)
+          time_horizon: tpl.time_horizon,
+          priced_in_risk: tpl.priced_in_risk,
+          key_question: tpl.key_question,
         };
       });
 
@@ -1383,8 +1409,24 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
 
       const chainSection = sortedChains.map((c) => {
         const bd = c.score;
-        const scoreBar = bd.total >= 65 ? "■".repeat(Math.round(bd.total / 10)) : bd.total >= 45 ? "■".repeat(Math.round(bd.total / 10)) : "■".repeat(Math.round(bd.total / 10));
-        return `**Chain ${c.chain_id}: ${c.name}** — Score: **${bd.total}/100 [${bd.rating}]** ${scoreBar}
+        const scoreBar = "■".repeat(Math.round(bd.total / 10));
+        const hasFinancialFields = !!(c.time_horizon && c.priced_in_risk && c.key_question);
+        const label = isFinancialEvent && hasFinancialFields ? "Transmission Channel" : "Chain";
+
+        if (isFinancialEvent && hasFinancialFields) {
+          // === FINANCIAL EVENT FORMAT: Transmission Channel ===
+          return `**${label} ${c.chain_id}: ${c.name}** — Score: **${bd.total}/100 [${bd.rating}]** ${scoreBar}
+- Mechanism: ${c.pattern}
+- Time horizon: ${c.time_horizon}
+- Winners: [${c.ticker_seeds.bullish.join(", ") || "—"}] / Losers: [${c.ticker_seeds.bearish.join(", ") || "—"}]
+- Sectors: ${c.sector_hints.join(", ")}
+- Priced-in risk: ${c.priced_in_risk}
+- Key question: ${c.key_question}
+- Expected magnitude: ${c.magnitude_range}
+- Score breakdown: base(${bd.base}) + hist(${bd.historical_match}) + season(${bd.seasonal_alignment}) + discipline(${bd.multi_discipline}) + keywords(${bd.keyword_density}) + length(${bd.chain_length_penalty}) + consensus(${bd.consensus_penalty}) + materiality(${bd.revenue_materiality_adj}) + interaction(${bd.interaction_bonus})${bd.flags.length > 0 ? "\n- FLAGS: " + bd.flags.join(" | ") : ""}`;
+        } else {
+          // === DAILY EVENT FORMAT: Chain Template ===
+          return `**${label} ${c.chain_id}: ${c.name}** — Score: **${bd.total}/100 [${bd.rating}]** ${scoreBar}
 - Pattern: ${c.pattern}
 - Disciplines: ${c.disciplines.join(" → ")}
 - Typical steps: ${c.typical_steps}
@@ -1392,6 +1434,7 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
 - Sector hints: ${c.sector_hints.join(", ")}
 - Ticker seeds: Bullish [${c.ticker_seeds.bullish.join(", ") || "—"}] / Bearish [${c.ticker_seeds.bearish.join(", ") || "—"}]
 - Expected magnitude: ${c.magnitude_range}${bd.flags.length > 0 ? "\n- FLAGS: " + bd.flags.join(" | ") : ""}`;
+        }
       }).join("\n\n");
 
       const histSection = histMatches.length > 0
@@ -1435,8 +1478,8 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
   ? `"Most people think ${weakChains[0].name.split("→")[0].trim()} — but the real play is ${strongChains[0].name.split("→")[0].trim()}"`
   : "Follow chain score ranking for narrative priority."}`;
       const reasoningModeNote = isFinancialEvent
-        ? `- **REASONING MODE: FINANCIAL TRANSMISSION** — This is a direct financial event. Use the chain templates below as transmission channel mappings (NOT multi-step butterfly chains). Apply the 3-Question Test: (1) Already priced in? (2) What's the second derivative? (3) Where is consensus wrong?`
-        : `- **REASONING MODE: BUTTERFLY EFFECT** — This is a daily-life/non-financial event. Build cross-domain causal chains from the event to financial implications.`;
+        ? `- **REASONING MODE: FINANCIAL TRANSMISSION** — This is a direct financial event. The Transmission Channels below map how this event propagates through markets. For each channel, evaluate: (1) Already priced in? (2) What's the second derivative? (3) Where is consensus wrong? Reference the financial-transmission skill for methodology.`
+        : `- **REASONING MODE: BUTTERFLY EFFECT** — This is a daily-life/non-financial event. Build cross-domain causal chains from the event to financial implications. Reference butterfly-effect-chain skill for methodology.`;
 
       const output = `# Mr.IF Reasoning Engine Output v3.1
 
@@ -1454,10 +1497,12 @@ ${reasoningModeNote}
 ${interactionSection}## 2. Reasoning Directions
 ${allDirections.map((d, i) => `${i + 1}. ${d}`).join("\n")}
 
-## 3. Chain Templates (Pre-Scored, sorted by score)
+## 3. ${isFinancialEvent ? "Transmission Channels" : "Chain Templates"} (Pre-Scored, sorted by score)
 ${chainSection}
 
-You may supplement or adjust these templates. Use scores to prioritize: STRONG chains lead your narrative, WEAK chains are mentioned only to debunk or note as consensus traps.
+${isFinancialEvent
+  ? "These are transmission channel mappings — use them as your framework for how this financial event propagates. Apply the 3-Question Test (priced in? second derivative? consensus wrong?) on each channel. STRONG channels lead your narrative."
+  : "You may supplement or adjust these templates. Use scores to prioritize: STRONG chains lead your narrative, WEAK chains are mentioned only to debunk or note as consensus traps."}
 
 ## 4. Historical Precedents (Enhanced)
 ${histSection}

@@ -168,11 +168,16 @@ Rule: If uncertain → say "needs confirmation via data tool" and actually confi
 ## Collaboration with Skills
 
 ```
-Chain construction → reference butterfly-effect-chain.md patterns and three laws
+Chain construction (daily events) → reference butterfly-effect-chain.md patterns and three laws
+Transmission mapping (financial events) → reference financial-transmission.md channels and 3-question test
 Discipline reasoning → reference cross-domain-reasoning.md for anchors, mistakes, bridges
 Second-order detection → reference second-order-thinking.md detection tools
+Quantitative reasoning → reference quantitative-reasoning.md for magnitude/probability calibration
+Historical precedents → reference historical-precedent-search.md when dynamic search is recommended
 Knowledge anchors → use discipline knowledge returned by mr_if_reason tool
 ```
+
+**Note**: When the tool output says `REASONING MODE: FINANCIAL TRANSMISSION`, prioritize financial-transmission.md over butterfly-effect-chain.md. The tool's Transmission Channel output is your starting framework — supplement, don't rebuild.
 
 ---
 

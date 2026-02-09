@@ -201,7 +201,7 @@ server.resource(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Mr.IF MCP Server v3 started");
+  console.error("Mr.IF MCP Server v3.1 started");
 }
 
 main().catch((error) => {
