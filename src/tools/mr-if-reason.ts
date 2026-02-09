@@ -264,7 +264,7 @@ function matchTemplates(eventType: string, keywords: string[]): string[] {
   const inputJoined = keywords.join(" ").toLowerCase();
 
   for (const [key, tpl] of Object.entries(CHAIN_TEMPLATES)) {
-    if (key === "second_order_hidden") continue; // 二阶思维单独处理，永远加入
+    if (key === "second_order_hidden") continue; // handled conditionally by caller
     const hit = tpl.triggers.some((t) => keywordMatch(inputJoined, t));
     if (hit) matched.push(key);
   }
@@ -284,14 +284,32 @@ function matchTemplates(eventType: string, keywords: string[]): string[] {
     matched.push(...(fallback[eventType] || ["consumption_to_industry"]));
   }
 
-  const unique = [...new Set(matched)];
+  return [...new Set(matched)].slice(0, 5);
+}
 
-  // 二阶思维永远作为最后一个模板加入（对每个事件都有价值）
-  if (!unique.includes("second_order_hidden")) {
-    unique.push("second_order_hidden");
-  }
+// ======================================================================
+// Section 2.5: Complexity Assessment & Second-Order Routing
+// ======================================================================
 
-  return unique.slice(0, 5);
+const CONSENSUS_EVENT_TYPES = new Set(["weather", "geopolitical", "economic", "technology", "policy"]);
+
+function assessComplexity(
+  secondaryCount: number,
+  templateCount: number
+): "light" | "medium" | "heavy" {
+  const typeCount = 1 + secondaryCount;
+  if (typeCount >= 3 || templateCount >= 4) return "heavy";
+  if (typeCount >= 2 || templateCount >= 3) return "medium";
+  return "light";
+}
+
+function shouldIncludeSecondOrder(
+  primaryType: string,
+  secondaryTypes: string[],
+  complexity: "light" | "medium" | "heavy"
+): boolean {
+  if (complexity === "light") return false;
+  return CONSENSUS_EVENT_TYPES.has(primaryType) || secondaryTypes.some(t => CONSENSUS_EVENT_TYPES.has(t));
 }
 
 // ======================================================================
@@ -552,7 +570,7 @@ const DISCIPLINE_KNOWLEDGE: Record<string, string> = {
 export function registerMrIfReason(server: McpServer): void {
   server.tool(
     "mr_if_reason",
-    `Mr.IF butterfly-effect reasoning engine. Input any everyday event, returns in one call: event classification, chain templates, historical precedents, validation framework, confluence rules.
+    `Mr.IF butterfly-effect reasoning engine. Input any everyday event, returns: event classification, chain templates, historical precedents, discipline knowledge, and a complexity-based reasoning depth recommendation.
 This is Mr.IF's core reasoning tool — MUST be called BEFORE all other tools.
 User says "it's getting cold" → not asking to buy a jacket, asking which US stocks to watch. ALWAYS interpret user input from a financial perspective.`,
     {
@@ -573,17 +591,25 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
         if (info) info.reasoning_angles.forEach((d) => { if (!allDirections.includes(d)) allDirections.push(d); });
       }
 
-      // 2. 链条模板
-      const templateKeys = matchTemplates(cls.primary_type, cls.matched_keywords);
+      // 2. Chain templates
+      let templateKeys = matchTemplates(cls.primary_type, cls.matched_keywords);
+
+      // 2.5 Complexity assessment & conditional second-order
+      const complexity = assessComplexity(cls.secondary_types.length, templateKeys.length);
+      const secondOrder = shouldIncludeSecondOrder(cls.primary_type, cls.secondary_types, complexity);
+      if (secondOrder && !templateKeys.includes("second_order_hidden")) {
+        templateKeys.push("second_order_hidden");
+        templateKeys = templateKeys.slice(0, 5);
+      }
+
       const chains = templateKeys.map((key, i) => {
         const tpl = CHAIN_TEMPLATES[key];
         return {
           chain_id: i + 1,
           name: tpl?.name || key,
-          pattern: tpl?.pattern || "通用推理",
-          disciplines: tpl?.disciplines || ["经济学"],
+          pattern: tpl?.pattern || "General reasoning",
+          disciplines: tpl?.disciplines || ["Economics"],
           typical_steps: tpl?.typical_steps || 4,
-          prompt: `Starting from "${user_input}", reason using the [${tpl?.name}] pattern: ${tpl?.pattern}. Disciplines involved: ${tpl?.disciplines.join(", ")}. ${seasonContext ? `Seasonal context: ${seasonContext}` : ""}`,
         };
       });
 
@@ -591,15 +617,15 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
       const allKw = [...cls.matched_keywords, ...user_input.split(/[\s,，。！？]+/).filter((w) => w.length > 1)];
       const histMatches = searchCases(allKw);
 
-      // 4. 学科知识注入（根据事件类型）
+      // 4. Discipline knowledge injection (by event type — now up to 3 types)
       const primaryKnowledge = DISCIPLINE_KNOWLEDGE[cls.primary_type] || DISCIPLINE_KNOWLEDGE["daily"] || "";
       const secondaryKnowledge = cls.secondary_types
-        .slice(0, 1)
+        .slice(0, 2)
         .map((t) => DISCIPLINE_KNOWLEDGE[t])
         .filter(Boolean)
         .join("\n\n");
 
-      // 5. 组装 markdown 格式输出（比 JSON 对 LLM 更友好）
+      // 5. Build output sections
       const histSection = histMatches.length > 0
         ? histMatches.map(({ case_data: c, score }) =>
             `**${c.title}** (${c.year}, relevance: ${score})\n` +
@@ -609,14 +635,13 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
             `- Tickers: ${c.tickers.join(", ")}\n` +
             `- Lesson: ${c.lesson}`
           ).join("\n\n")
-        : "No direct match found. Consider using News Search tool for similar historical events.";
+        : "No direct historical match. This is novel territory — build chains carefully and note the absence of precedent. Consider News Search for analogous events.";
 
       const chainSection = chains.map((c) =>
         `**Chain ${c.chain_id}: ${c.name}**\n` +
         `- Pattern: ${c.pattern}\n` +
         `- Disciplines: ${c.disciplines.join(" → ")}\n` +
-        `- Recommended steps: ${c.typical_steps}\n` +
-        `- Building guide: ${c.prompt}`
+        `- Typical steps: ${c.typical_steps}`
       ).join("\n\n");
 
       const output = `# Mr.IF Reasoning Engine Output
@@ -628,53 +653,25 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
 - Matched keywords: ${cls.matched_keywords.join(", ") || "No exact match — using default templates"}
 - Date: ${date.toISOString().split("T")[0]}
 - Seasonal context: ${seasonContext}
+- Complexity: **${complexity}**
+- Second-order recommended: **${secondOrder ? "yes — your conclusion likely has a consensus first-order reaction, look for what the market is missing" : "no — focus on building solid chains rather than forcing contrarian angles"}**
 
 ## 2. Reasoning Directions
 ${allDirections.map((d, i) => `${i + 1}. ${d}`).join("\n")}
 
-## 3. Chain Templates (use these to build causal chains)
+## 3. Chain Templates
 ${chainSection}
+
+You may supplement or adjust these templates based on your own reasoning. Each chain step: content + discipline + "because..."
 
 ## 4. Historical Precedents
 ${histSection}
 
-## 5. Event-Relevant Discipline Knowledge (use these anchors and rules when reasoning)
+## 5. Discipline Knowledge
 ${primaryKnowledge}
 ${secondaryKnowledge ? `\n${secondaryKnowledge}` : ""}
 
-## 6. Validation Framework (score each chain)
-**6 Dimensions:** Logical coherence (25%) | Disciplinary accuracy (20%) | Assumption transparency (15%) | Counter-argument (15%) | Time consistency (10%) | Scale reasonableness (15%)
-
-**Bonus:** Chain <4 steps +1 | Has historical precedent +1 | Multiple chains converge +0.5~1.0 | Real-time data support +1 | Established principle +1
-**Penalty:** Chain >5 steps -1 | 1 weak link -0.5 | 2+ weak links -0.5 then -1.0 each | Unverified assumption -1 | Single discipline -0.5 | Reasoning = market consensus -1
-
-**Confluence rules:** 2 chains same direction → confidence +0.5 | 3 chains same direction → +1.0 | Contradiction → mark mixed, needs resolution
-
-## 7. Execution Instructions
-
-**In your thinking, strictly follow this sequence (7-Gate Protocol):**
-
-Gate 1 Event Anchoring: Confirm financial interpretation. If your interpretation reads like life advice → start over.
-Gate 2 Chain Building: Use the ${chains.length} templates above to build ${chains.length}+ causal chains. Each step must tag: content + discipline + strength + "because..."
-Gate 3 Chain Validation: Score using the 6 dimensions above. Honestly flag weaknesses. Score <2.5 → discard.
-Gate 4 Historical Comparison: Compare against historical cases above. Consistent → strengthen. Contradicting → must explain why this time is different.
-Gate 5 Confluence Analysis: Multiple chains converge = high confidence. Contradiction = mark mixed. Derive net direction (bullish/bearish/neutral).
-Gate 6 Second-Order Check: For each net direction ask — is this consensus? Hidden winners? Hidden losers? Time mismatch?
-Gate 7 Exit Check: ①At least 3 chains ②At least 2 different disciplines ③Has counter-arguments ④Has historical comparison ⑤Has net direction ⑥Has second-order check ⑦Has specific sector direction ⑧No fabricated theories ⑨At least 1 chain scoring >=3 ⑩All passed
-
-**Anti-hallucination rules:**
-- No reverse-engineering (don't decide the conclusion first then build a chain to justify it)
-- Every "because" must withstand scrutiny
-- Uncertain discipline theory → use common-sense wording instead
-- Uncertain numbers → mark "needs data tool confirmation"
-- Admit at least 1 chain has a weakness
-
-**After Gate 7 passes:**
-→ Call Industry Mapper → Security Mapper → Data Tool
-→ Conditionally call: News Search (current events), Sentiment Tool (market mood), DCF Calculator (valuation), etc.
-→ Synthesize into natural RIA-style response + MUST end with ticker summary table
-
-**NEVER show Gates, scores, chain labels, or tool names to the user. Output should read like a trusted investment advisor chatting across the table.**`;
+Now follow the **reasoning-discipline** protocol in your thinking. Depth = **${complexity}**. Then proceed to external tools.`;
 
       return {
         content: [{ type: "text" as const, text: output }],

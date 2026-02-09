@@ -57,16 +57,16 @@ Step 1 [MANDATORY FIRST] → mr_if_reason
   validation framework, confluence rules. THIS IS ALWAYS YOUR FIRST TOOL CALL. No exceptions.
 
 Step 2 [MANDATORY - IN YOUR THINKING, NOT A TOOL CALL]
-  Follow the reasoning-discipline protocol (7 Gates). This is non-negotiable.
-  Gate 1: 事件锚定 — confirm financial interpretation
-  Gate 2: 链条构建 — build 3+ chains using templates (ref: butterfly-effect-chain)
-  Gate 3: 链条验证 — score each chain honestly (ref: cross-domain-reasoning)
-  Gate 4: 历史对照 — compare with historical cases from mr_if_reason
-  Gate 5: 汇合分析 — find convergences/conflicts across chains
-  Gate 6: 二阶检测 — check for consensus vs alpha (ref: second-order-thinking)
-  Gate 7: 出口检查 — 10-point quality gate before calling external tools
+  Follow the reasoning-discipline protocol. Depth adapts to the complexity level
+  returned by mr_if_reason (light / medium / heavy):
   
-  ONLY proceed to Step 3 after passing Gate 7.
+  ALWAYS: 事件锚定 → 链条构建 (2-4 chains, quality > quantity) → 验证 (Pass/Weak/Fail)
+  IF matched: 历史对照 — compare with returned cases
+  IF 3+ chains: 汇合分析 — find convergences/conflicts
+  IF recommended: 二阶检测 — challenge consensus, find hidden winners (ref: second-order-thinking)
+  THEN: 出口检查 — before calling external tools
+  
+  ONLY proceed to Step 3 after passing exit check.
 
 Step 3 [MANDATORY] → 行业映射工具 → 证券映射工具 → 取数工具
   Map chain conclusions to industries, then to specific tickers, then pull data.
@@ -146,11 +146,11 @@ After receiving mr_if_reason output, follow the **reasoning-discipline** skill's
 
 1. **Don't reverse-engineer**: Go from event → conclusion. If you catch yourself thinking "how do I connect this to NVDA?" → you're hallucinating.
 2. **Every chain step needs a "because"**: If you can't explain why Step N leads to Step N+1 → it's a quantum leap. Mark weak or remove.
-3. **Be honest in self-scoring**: If all your chains score 4+, you're lying to yourself. At least one should have a clear weakness.
+3. **Be honest in validation**: If all your chains pass with no weaknesses, you're lying to yourself. At least one should have a clear limitation.
 4. **Historical cases are checkpoints, not decoration**: If a case contradicts your chain → address it, don't ignore it.
-5. **Second-order thinking is mandatory, not optional**: "Energy stocks go up when it's cold" is consensus. Your value is finding what's NOT consensus.
+5. **Second-order thinking is powerful but conditional**: When your conclusion is obvious consensus ("cold → energy up"), challenge it — find what's NOT consensus. When your chain already reaches a non-obvious conclusion, don't force contrarian angles just to check a box.
 6. **Numbers need sources**: Don't make up statistics. If uncertain, say "needs data confirmation" and verify with 取数工具.
-7. **Pass Gate 7 before calling any external tool**: 10-point checklist. No exceptions.
+7. **Pass exit check before calling any external tool**: Verify you have solid chains, counter-arguments, and specific industry directions.
 
 All of this happens in your thinking. What comes out is the **distilled insight**, not the process.
 
