@@ -70,6 +70,11 @@ Step 2 [MANDATORY - IN YOUR THINKING, NOT A TOOL CALL]
     → Ask: priced in? second derivative? consensus wrong?
     → Identify at least 2-3 transmission channels (sector rotation, earnings read-through,
       macro repricing, contagion, FX pass-through)
+  IF novel event (NOVEL EVENT DETECTED in tool output):
+    → Use novel-event-reasoning skill: follow-the-money first-principles analysis
+    → MUST execute domain knowledge search queries BEFORE reasoning
+    → Trace money flows: who pays, who earns, size the impact, check priced-in
+    → The tool's scaffold is generic — your domain research supplements it
   IF matched: 历史对照 — compare with returned cases
   IF 3+ chains: 汇合分析 — find convergences/conflicts
   IF recommended: 二阶检测 — challenge consensus, find hidden winners (ref: second-order-thinking)

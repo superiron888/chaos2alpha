@@ -197,6 +197,20 @@ server.resource(
   })
 );
 
+server.resource(
+  "skill-novel-event-reasoning",
+  "skill://novel-event-reasoning",
+  async (uri) => ({
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: "text/markdown",
+        text: readSkill("novel-event-reasoning.md"),
+      },
+    ],
+  })
+);
+
 // ====== Start server ======
 async function main() {
   const transport = new StdioServerTransport();

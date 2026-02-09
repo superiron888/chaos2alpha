@@ -960,6 +960,65 @@ ${queries.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 }
 
 // ======================================================================
+// Section 3.6: Domain Knowledge Search (NEW v3.2 — Layer 2)
+// ======================================================================
+
+function generateDomainKnowledgeQueries(
+  userInput: string,
+  matchedKeywordCount: number,
+): string[] {
+  // Only generate when we have zero or very few keyword matches (novel event territory)
+  if (matchedKeywordCount > 1) return [];
+
+  // Clean: remove question patterns, dates, common command words
+  const cleaned = userInput
+    .replace(/[买卖]什么[^。？]*[好吗？?]?/g, "")
+    .replace(/有什么[^。？]*[？?]?/g, "")
+    .replace(/应该[买卖看什么]+[^，。]*$/g, "")
+    .replace(/\d{4}年?/g, "")
+    .replace(/\d+月\d*日?/g, "")
+    .replace(/[，。！？、；：""''?!.]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Extract a concise topic seed (first meaningful portion, capped)
+  const topicSeed = cleaned.slice(0, 25).trim();
+  if (topicSeed.length < 2) return [];
+
+  const queries: string[] = [];
+
+  // Bilingual queries for maximum web search coverage
+  queries.push(`${topicSeed} US stock market impact companies to watch`);
+  queries.push(`${topicSeed} 美股 受益 上市公司 投资机会`);
+  queries.push(`${topicSeed} financial impact revenue industry analysis NYSE NASDAQ`);
+
+  return queries;
+}
+
+function buildDomainKnowledgeSection(
+  isNovelEvent: boolean,
+  queries: string[],
+): string {
+  if (!isNovelEvent || queries.length === 0) return "";
+
+  return `
+## 4.6 Domain Knowledge Search [STRONGLY RECOMMENDED]
+The tool has **limited built-in knowledge** for this event type. You MUST search for domain understanding BEFORE starting your reasoning.
+
+**Domain queries** (use 网络检索工具 with 1-2 of these):
+${queries.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+
+**What to extract from search results** (ref: novel-event-reasoning skill):
+1. **Revenue flows**: Who earns money from this event? (broadcasting, sponsorship, tourism, betting, merchandise, streaming)
+2. **Revenue materiality**: How much revenue? Is it >1% of any public company's annual revenue?
+3. **Key companies**: Which US-listed companies are most directly involved?
+4. **Historical**: Has a similar event moved stocks before? What magnitude?
+5. **Priced-in status**: Is this a scheduled event everyone already knows about?
+
+Use extracted data as your quantitative anchors. Then proceed with first-principles reasoning.`;
+}
+
+// ======================================================================
 // Section 4: Discipline Knowledge (unchanged)
 // ======================================================================
 
@@ -1452,6 +1511,9 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
       const FINANCIAL_EVENT_TYPES = new Set(["market_event", "corporate_event", "fx_commodity"]);
       const isFinancialEvent = FINANCIAL_EVENT_TYPES.has(cls.primary_type);
 
+      // --- Novel Event Detection ---
+      const isNovelEvent = cls.matched_keywords.length === 0;
+
       // --- Dynamic Historical Search ---
       const bestHistScore = histMatches.length > 0 ? histMatches[0].score : 0;
       const dynamicSearchNeeded = bestHistScore < 8; // weak or no match
@@ -1462,6 +1524,10 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
       const dynamicSearchSection = buildDynamicSearchSection(
         dynamicSearchNeeded, dynamicSearchOptional, dynamicSearchQueries, bestHistScore
       );
+
+      // --- Domain Knowledge Search (Layer 2: for novel events) ---
+      const domainKnowledgeQueries = generateDomainKnowledgeQueries(user_input, cls.matched_keywords.length);
+      const domainKnowledgeSection = buildDomainKnowledgeSection(isNovelEvent, domainKnowledgeQueries);
 
       const anchorSection = anchors.length > 0
         ? anchors.map(a => `| ${a.metric} | ${a.value} | ${a.source} | ${a.usage} |`).join("\n")
@@ -1477,11 +1543,13 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
 - **Narrative arc**: ${weakChains.length > 0 && strongChains.length > 0
   ? `"Most people think ${weakChains[0].name.split("→")[0].trim()} — but the real play is ${strongChains[0].name.split("→")[0].trim()}"`
   : "Follow chain score ranking for narrative priority."}`;
-      const reasoningModeNote = isFinancialEvent
+      const reasoningModeNote = isNovelEvent
+        ? `- **REASONING MODE: FIRST-PRINCIPLES** — **NOVEL EVENT DETECTED**: No pre-defined keywords matched this input. The chain templates below are generic fallbacks. You MUST: (1) Execute domain knowledge search queries below BEFORE reasoning, (2) Use the novel-event-reasoning skill: trace money flows (who pays, who earns), size revenue impact, check "priced in" status, (3) Your domain research is MORE important than the generic templates.`
+        : isFinancialEvent
         ? `- **REASONING MODE: FINANCIAL TRANSMISSION** — This is a direct financial event. The Transmission Channels below map how this event propagates through markets. For each channel, evaluate: (1) Already priced in? (2) What's the second derivative? (3) Where is consensus wrong? Reference the financial-transmission skill for methodology.`
         : `- **REASONING MODE: BUTTERFLY EFFECT** — This is a daily-life/non-financial event. Build cross-domain causal chains from the event to financial implications. Reference butterfly-effect-chain skill for methodology.`;
 
-      const output = `# Mr.IF Reasoning Engine Output v3.1
+      const output = `# Mr.IF Reasoning Engine Output v3.2
 
 ## 1. Event Classification
 - User input: "${user_input}"
@@ -1508,6 +1576,7 @@ ${isFinancialEvent
 ${histSection}
 
 ${dynamicSearchSection}
+${domainKnowledgeSection}
 
 ## 5. Quantitative Anchors
 | Metric | Value | Source | How to Use |
