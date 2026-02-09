@@ -158,8 +158,8 @@ Not every input deserves the same analysis. "I sneezed" needs 2 solid chains. "T
 
 ```bash
 # Clone
-git clone https://github.com/superiron888/predictionfromdailyevent.git
-cd predictionfromdailyevent
+git clone https://github.com/superiron888/chaos2alpha.git
+cd chaos2alpha
 
 # Install & Build
 npm install && npm run build
@@ -177,7 +177,7 @@ Add to your MCP client config (Claude Desktop, Cursor, etc.):
   "mcpServers": {
     "mr-if": {
       "command": "node",
-      "args": ["/path/to/predictionfromdailyevent/dist/index.js"]
+      "args": ["/path/to/chaos2alpha/dist/index.js"]
     }
   }
 }
@@ -239,7 +239,7 @@ From *Symptom → Pharma Supply Chain* to *Tech Paradigm → Pick-and-Shovel Pla
 ## Project Structure
 
 ```
-predictionfromdailyevent/
+chaos2alpha/
 ├── src/
 │   ├── index.ts                    # MCP Server entry point
 │   └── tools/
