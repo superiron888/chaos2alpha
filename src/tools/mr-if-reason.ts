@@ -1,25 +1,28 @@
 /**
- * Mr.IF Butterfly-Effect Reasoning Engine — Unified Tool
+ * Mr.IF Butterfly-Effect Reasoning Engine — Unified Tool v3
  *
  * One call returns the complete reasoning scaffold:
  * 1. Event classification + reasoning directions
- * 2. Chain template matching + building guidance
- * 3. Validation framework + scoring rubric
- * 4. Historical precedent search (15 cases)
- * 5. Confluence analysis rules
+ * 2. Chain template matching + PRE-SCORING (0-100) + sector/ticker seeds
+ * 3. Event interaction effects (when 2+ event types co-occur)
+ * 4. Historical precedent search (enhanced: recency + seasonal + magnitude)
+ * 5. Structured quantitative anchors
+ * 6. Discipline knowledge injection
  *
- * After receiving this tool's output, the LLM completes in its thinking:
- * - Fill in chain steps using templates
- * - Self-score and validate
- * - Confluence analysis
- * Then calls external tools (industry mapper, security mapper, data API, etc.)
+ * v3 upgrades over v2:
+ * - Chain confidence pre-score (quantitative, not just Pass/Weak/Fail)
+ * - Sector hints + ticker seeds per chain (LLM starts with concrete targets)
+ * - Event interaction matrix (compounding/amplifying/dampening effects)
+ * - Enhanced historical matching (time-decay, seasonal alignment, magnitude weighting)
+ * - Structured quantitative anchors (numbers the LLM can directly reference)
+ * - Magnitude + probability guidance per chain
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 // ======================================================================
-// Section 1: 事件分类 (from butterfly-analyze.ts)
+// Section 1: Event Classification
 // ======================================================================
 
 const EVENT_TYPES = {
@@ -94,21 +97,17 @@ const SEASONAL_CONTEXT: Record<number, string> = {
   12: "Winter, Holiday shopping peak, Christmas+New Year retail, Tax-Loss Harvesting, low liquidity",
 };
 
-// 短英文关键词需要词边界匹配，避免 "rain" 匹配 "AI"
 const SHORT_EN_KEYWORDS = new Set(["ai", "ev", "5g", "vr", "ban", "hot", "flu"]);
 
 function keywordMatch(inputLower: string, kw: string): boolean {
   const kwLower = kw.toLowerCase();
-  // 中文关键词：直接 includes
   if (/[\u4e00-\u9fff]/.test(kw)) {
     return inputLower.includes(kwLower);
   }
-  // 短英文关键词（<=3字符）：用词边界正则避免误命中
   if (kwLower.length <= 3 || SHORT_EN_KEYWORDS.has(kwLower)) {
     const regex = new RegExp(`\\b${kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
     return regex.test(inputLower);
   }
-  // 长英文关键词：includes 即可
   return inputLower.includes(kwLower);
 }
 
@@ -135,22 +134,37 @@ function classifyEvent(input: string) {
 }
 
 // ======================================================================
-// Section 2: 链条模板 (from causal-chain-builder.ts)
+// Section 2: Chain Templates (Enhanced v3)
 // ======================================================================
 
-const CHAIN_TEMPLATES: Record<string, {
+interface ChainTemplate {
   name: string;
   pattern: string;
   disciplines: string[];
   typical_steps: number;
   triggers: string[];
-}> = {
+  // v3 fields
+  sector_hints: string[];
+  ticker_seeds: { bullish: string[]; bearish: string[] };
+  magnitude_range: string;
+  consensus_level: "high" | "medium" | "low";
+  revenue_materiality: "high" | "medium" | "low";
+  seasonal_peak_months: number[];
+}
+
+const CHAIN_TEMPLATES: Record<string, ChainTemplate> = {
   symptom_to_pharma: {
     name: "Symptom → Pharma Supply Chain",
     pattern: "Body symptom → Disease classification → Affected population scale → Drug/treatment demand → Pharma company earnings",
     disciplines: ["Physiology", "Epidemiology", "Economics"],
     typical_steps: 4,
     triggers: ["打喷嚏", "咳嗽", "失眠", "头疼", "发烧", "sneeze", "cough", "flu", "sick"],
+    sector_hints: ["Healthcare", "Pharma", "Diagnostics"],
+    ticker_seeds: { bullish: ["QDEL", "ABT", "HOLX", "DGX"], bearish: ["MRNA"] },
+    magnitude_range: "Big pharma: <1% EPS impact (flu drugs <5% revenue). Diagnostics: +5-15% quarterly revenue uplift in severe seasons",
+    consensus_level: "high",
+    revenue_materiality: "low",
+    seasonal_peak_months: [1, 2, 10, 11, 12],
   },
   weather_to_energy: {
     name: "Weather → Energy / Commodities",
@@ -158,6 +172,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Physics", "Meteorology", "Economics"],
     typical_steps: 4,
     triggers: ["降温", "高温", "暴雨", "干旱", "cold", "hot", "freeze", "heatwave"],
+    sector_hints: ["Energy", "Utilities", "Midstream"],
+    ticker_seeds: { bullish: ["UNG", "XLE", "ET", "WMB", "LNG"], bearish: ["DAL", "UAL", "DHI", "LEN"] },
+    magnitude_range: "Nat gas: ±5-15% on 2-week cold/warm deviation. Energy stocks: +3-8% sector move. Midstream: +2-5% with volume leverage",
+    consensus_level: "high",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 6, 7, 8, 12],
   },
   consumption_to_industry: {
     name: "Consumer Observation → Industry Trend",
@@ -165,6 +185,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Sociology", "Psychology", "Economics"],
     typical_steps: 4,
     triggers: ["咖啡", "外卖", "排队", "商场", "coffee", "delivery", "traffic"],
+    sector_hints: ["Consumer Discretionary", "Consumer Staples", "Retail"],
+    ticker_seeds: { bullish: ["SBUX", "MCD", "DASH", "AMZN"], bearish: ["SPG", "M"] },
+    magnitude_range: "Individual names: ±3-8% on trend confirmation. Sector: ±1-3%",
+    consensus_level: "low",
+    revenue_materiality: "medium",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   emotion_to_capital: {
     name: "Social Sentiment → Capital Flow",
@@ -172,6 +198,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Psychology", "Behavioral Economics", "Finance"],
     typical_steps: 4,
     triggers: ["焦虑", "恐慌", "乐观", "躺平", "fear", "panic", "FOMO", "anxiety"],
+    sector_hints: ["Safe Haven", "Gold", "Treasuries", "Defensive"],
+    ticker_seeds: { bullish: ["GLD", "TLT", "XLU", "XLP"], bearish: ["QQQ", "ARKK", "XLY"] },
+    magnitude_range: "VIX +5-15 points in panic; sector rotation ±3-8% over 1-4 weeks",
+    consensus_level: "medium",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   policy_to_industry: {
     name: "Policy Signal → Industry Restructuring",
@@ -179,6 +211,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Political Science", "Law", "Economics"],
     typical_steps: 4,
     triggers: ["禁令", "补贴", "碳中和", "ban", "subsidy", "regulation", "tariff", "executive order"],
+    sector_hints: ["Varies by policy target"],
+    ticker_seeds: { bullish: ["LMT", "RTX", "ICLN"], bearish: ["Depends on target"] },
+    magnitude_range: "Direct beneficiaries: +5-15%. Impacted sectors: -3-10%. Timeline: weeks to quarters",
+    consensus_level: "medium",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   tech_to_revolution: {
     name: "Tech Breakthrough → Industry Revolution",
@@ -186,6 +224,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Engineering", "Physics", "Economics"],
     typical_steps: 5,
     triggers: ["AI", "电池", "芯片", "量子", "ChatGPT", "chip", "quantum"],
+    sector_hints: ["Technology", "Semiconductors", "Software"],
+    ticker_seeds: { bullish: ["NVDA", "AMD", "MSFT", "GOOGL", "SMH"], bearish: ["Legacy incumbents"] },
+    magnitude_range: "Paradigm shift: leaders +50-200% over 12 months. Disrupted: -20-50%. Near-term: ±10-30%",
+    consensus_level: "medium",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   disaster_to_supply: {
     name: "Disaster → Supply Chain → Substitute Demand",
@@ -193,6 +237,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Geography", "Logistics", "Economics"],
     typical_steps: 4,
     triggers: ["地震", "台风", "疫情", "贸易战", "earthquake", "pandemic", "trade war"],
+    sector_hints: ["Industrials", "Alternative Suppliers", "Insurance"],
+    ticker_seeds: { bullish: ["HD", "LOW", "CAT"], bearish: ["ALL", "TRV"] },
+    magnitude_range: "Disrupted companies: -5-20%. Alternative suppliers: +5-15%. Insurance: -5-15% short-term, recovery in 6 months",
+    consensus_level: "low",
+    revenue_materiality: "high",
+    seasonal_peak_months: [6, 7, 8, 9, 10],
   },
   health_to_wellness: {
     name: "Health Signal → Wellness Economy",
@@ -200,6 +250,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Physiology", "Psychology", "Consumer Economics"],
     typical_steps: 4,
     triggers: ["打喷嚏", "体检", "亚健康", "熬夜", "sneeze", "health check", "fatigue"],
+    sector_hints: ["Wellness", "Fitness", "Health Foods", "Hygiene"],
+    ticker_seeds: { bullish: ["KMB", "CLX", "PG", "PLNT"], bearish: [] },
+    magnitude_range: "Wellness/hygiene stocks: +2-5% seasonal tailwind. Individual names: +3-8% on demand confirmation",
+    consensus_level: "medium",
+    revenue_materiality: "medium",
+    seasonal_peak_months: [1, 2, 3, 10, 11, 12],
   },
   geopolitical_to_safehaven: {
     name: "Geopolitical Conflict → Safe Haven Assets",
@@ -207,6 +263,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Geopolitics", "Psychology", "Finance"],
     typical_steps: 3,
     triggers: ["war", "conflict", "sanction", "missile", "NATO", "trump", "特朗普", "战争", "冲突", "制裁"],
+    sector_hints: ["Safe Haven", "Defense", "Gold"],
+    ticker_seeds: { bullish: ["GLD", "TLT", "LMT", "RTX"], bearish: ["QQQ", "EEM", "EFA"] },
+    magnitude_range: "VIX +5-15pts. Gold +2-8%. Defense +5-15%. Equities -3-10%. Most revert within 2-4 weeks unless real supply disruption",
+    consensus_level: "high",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   geopolitical_to_supply: {
     name: "Geopolitical Conflict → Supply Chain Disruption → Alt Suppliers",
@@ -214,6 +276,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Geopolitics", "Supply Chain", "Economics"],
     typical_steps: 4,
     triggers: ["tariff", "sanction", "embargo", "trade war", "China", "Russia", "关税", "封锁"],
+    sector_hints: ["Energy", "Commodities", "Reshoring Beneficiaries"],
+    ticker_seeds: { bullish: ["XOM", "COP", "AMAT", "LRCX"], bearish: ["AAPL", "NKE"] },
+    magnitude_range: "Sanctioned commodity: +10-30%. Alt suppliers: +5-20%. Dependent companies: -5-15%",
+    consensus_level: "medium",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   supply_chain_bottleneck: {
     name: "Supply Chain Bottleneck → Pricing Power → Margin Explosion",
@@ -221,6 +289,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Supply Chain", "Engineering", "Economics"],
     typical_steps: 4,
     triggers: ["shortage", "bottleneck", "GPU", "chip", "缺货", "产能"],
+    sector_hints: ["Semiconductors", "Equipment", "Materials"],
+    ticker_seeds: { bullish: ["NVDA", "ASML", "AVGO", "TSMC"], bearish: ["Downstream consumers"] },
+    magnitude_range: "Bottleneck owner: +20-50% over cycle. Downstream: margin compression -5-15%",
+    consensus_level: "medium",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   event_to_fed_rotation: {
     name: "Economic Data → Fed Policy Expectation → Sector Rotation",
@@ -228,6 +302,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Economics", "Monetary Policy", "Finance"],
     typical_steps: 4,
     triggers: ["CPI", "inflation", "jobs", "unemployment", "Fed", "rate", "通胀", "就业", "利率"],
+    sector_hints: ["Rate-Sensitive Sectors", "Growth vs Value"],
+    ticker_seeds: { bullish: ["TLT", "QQQ", "XLRE"], bearish: ["KBE", "XLF"] },
+    magnitude_range: "Sector rotation: ±3-8%. Bond move: ±2-5%. Rate-sensitive growth: ±5-12% on surprises",
+    consensus_level: "medium",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 3, 5, 6, 7, 9, 11, 12],
   },
   second_order_hidden: {
     name: "First-Order → Second-Order Expectation Gap → Hidden Winners",
@@ -235,6 +315,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Psychology", "Market Mechanics", "Second-Order Thinking"],
     typical_steps: 5,
     triggers: ["obvious", "everyone knows", "consensus", "price in", "所有人都知道"],
+    sector_hints: ["Non-obvious beneficiaries"],
+    ticker_seeds: { bullish: [], bearish: [] },
+    magnitude_range: "Hidden winners often outperform consensus plays by 2-3x. Typical alpha: +5-20% over 1-3 months",
+    consensus_level: "low",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   tech_pickaxe: {
     name: "Tech Paradigm → Pick-and-Shovel Play",
@@ -242,6 +328,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Engineering", "Supply Chain", "Economics"],
     typical_steps: 5,
     triggers: ["AI", "ChatGPT", "data center", "cloud", "GPU", "算力", "数据中心"],
+    sector_hints: ["Data Center Infra", "Power", "Cooling", "Networking"],
+    ticker_seeds: { bullish: ["VST", "CEG", "VRT", "EQIX", "MU"], bearish: [] },
+    magnitude_range: "Infra picks: +15-40% on cycle. Power/cooling: +10-25%. Risk: cycle peaks and capex overshoot",
+    consensus_level: "medium",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   demographic_to_sector: {
     name: "Demographics → Sector Transformation",
@@ -249,6 +341,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Sociology", "Demography", "Economics"],
     typical_steps: 5,
     triggers: ["aging", "老龄化", "Gen Z", "millennial", "retirement", "birth rate"],
+    sector_hints: ["Healthcare", "Senior Living", "Digital Consumption"],
+    ticker_seeds: { bullish: ["UNH", "WELL", "AMZN", "RBLX"], bearish: [] },
+    magnitude_range: "Decade-level trend: compounding 8-15% annual sector outperformance. NOT a short-term trade",
+    consensus_level: "low",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   environment_to_greentech: {
     name: "Environmental Issue → Green Tech",
@@ -256,6 +354,12 @@ const CHAIN_TEMPLATES: Record<string, {
     disciplines: ["Chemistry", "Environmental Science", "Economics"],
     typical_steps: 4,
     triggers: ["雾霾", "碳排放", "塑料", "pollution", "carbon", "wildfire", "山火"],
+    sector_hints: ["Clean Energy", "Solar", "EV", "Carbon Capture"],
+    ticker_seeds: { bullish: ["FSLR", "ENPH", "ICLN", "OXY"], bearish: ["XLE", "Coal"] },
+    magnitude_range: "Clean energy on policy catalyst: +10-25%. On policy reversal: -10-20%",
+    consensus_level: "medium",
+    revenue_materiality: "high",
+    seasonal_peak_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
 };
 
@@ -264,7 +368,7 @@ function matchTemplates(eventType: string, keywords: string[]): string[] {
   const inputJoined = keywords.join(" ").toLowerCase();
 
   for (const [key, tpl] of Object.entries(CHAIN_TEMPLATES)) {
-    if (key === "second_order_hidden") continue; // handled conditionally by caller
+    if (key === "second_order_hidden") continue;
     const hit = tpl.triggers.some((t) => keywordMatch(inputJoined, t));
     if (hit) matched.push(key);
   }
@@ -288,7 +392,7 @@ function matchTemplates(eventType: string, keywords: string[]): string[] {
 }
 
 // ======================================================================
-// Section 2.5: Complexity Assessment & Second-Order Routing
+// Section 2.5: Complexity, Chain Scoring, Event Interaction
 // ======================================================================
 
 const CONSENSUS_EVENT_TYPES = new Set(["weather", "geopolitical", "economic", "technology", "policy"]);
@@ -312,8 +416,147 @@ function shouldIncludeSecondOrder(
   return CONSENSUS_EVENT_TYPES.has(primaryType) || secondaryTypes.some(t => CONSENSUS_EVENT_TYPES.has(t));
 }
 
+// --- Chain Pre-Score ---
+
+interface ScoreBreakdown {
+  base: number;
+  historical_match: number;
+  seasonal_alignment: number;
+  multi_discipline: number;
+  keyword_density: number;
+  chain_length_penalty: number;
+  consensus_penalty: number;
+  revenue_materiality_adj: number;
+  interaction_bonus: number;
+  total: number;
+  rating: "STRONG" | "MODERATE" | "WEAK";
+  flags: string[];
+}
+
+function computeChainScore(
+  templateKey: string,
+  template: ChainTemplate,
+  histMatches: Array<{ case_data: HistCase; score: number }>,
+  currentMonth: number,
+  matchedKeywordCount: number,
+  interactionMultiplier: number,
+): ScoreBreakdown {
+  const flags: string[] = [];
+  let base = 50;
+
+  // Historical match bonus
+  let historical_match = 0;
+  if (histMatches.length > 0) {
+    const bestScore = histMatches[0].score;
+    if (bestScore >= 10) { historical_match = 15; }
+    else if (bestScore >= 5) { historical_match = 8; }
+    else { historical_match = 3; }
+  }
+
+  // Seasonal alignment
+  let seasonal_alignment = 0;
+  if (template.seasonal_peak_months.includes(currentMonth)) {
+    seasonal_alignment = 15;
+  } else {
+    // Check adjacent months
+    const adjacent = template.seasonal_peak_months.some(
+      m => Math.abs(m - currentMonth) === 1 || Math.abs(m - currentMonth) === 11
+    );
+    if (adjacent) seasonal_alignment = 5;
+  }
+
+  // Multi-discipline bonus
+  const multi_discipline = Math.min((template.disciplines.length - 2) * 5, 10);
+
+  // Keyword density
+  const keyword_density = Math.min(matchedKeywordCount * 5, 15);
+
+  // Chain length penalty
+  const chain_length_penalty = template.typical_steps > 4 ? -(template.typical_steps - 4) * 8 : 0;
+
+  // Consensus penalty
+  let consensus_penalty = 0;
+  if (template.consensus_level === "high") {
+    consensus_penalty = -20;
+    flags.push("HIGH CONSENSUS — this conclusion can be Googled in 10 seconds. Find a non-obvious angle or note it as consensus.");
+  } else if (template.consensus_level === "medium") {
+    consensus_penalty = -8;
+  }
+
+  // Revenue materiality
+  let revenue_materiality_adj = 0;
+  if (template.revenue_materiality === "low") {
+    revenue_materiality_adj = -15;
+    flags.push("LOW REVENUE MATERIALITY — the event barely moves the needle on target companies' earnings. Pivot to higher-elasticity targets.");
+  } else if (template.revenue_materiality === "high") {
+    revenue_materiality_adj = 5;
+  }
+
+  // Interaction bonus (from event interaction matrix)
+  const interaction_bonus = Math.round((interactionMultiplier - 1.0) * 20);
+
+  const rawTotal = base + historical_match + seasonal_alignment + multi_discipline
+    + keyword_density + chain_length_penalty + consensus_penalty
+    + revenue_materiality_adj + interaction_bonus;
+
+  const total = Math.max(10, Math.min(95, rawTotal)); // clamp to 10-95
+
+  let rating: "STRONG" | "MODERATE" | "WEAK";
+  if (total >= 65) rating = "STRONG";
+  else if (total >= 45) rating = "MODERATE";
+  else rating = "WEAK";
+
+  if (rating === "WEAK") {
+    flags.push("Consider deprioritizing this chain or mentioning it only to debunk the obvious.");
+  }
+
+  return {
+    base, historical_match, seasonal_alignment, multi_discipline,
+    keyword_density, chain_length_penalty, consensus_penalty,
+    revenue_materiality_adj, interaction_bonus, total, rating, flags,
+  };
+}
+
+// --- Event Interaction Matrix ---
+
+interface InteractionEffect {
+  effect: "compounding" | "amplifying" | "dampening" | "pivotal" | "accelerating";
+  description: string;
+  multiplier: number;
+}
+
+const INTERACTION_MATRIX: Record<string, InteractionEffect> = {
+  "weather+geopolitical":       { effect: "compounding",   description: "Energy double-hit: demand shock + supply risk simultaneously", multiplier: 1.5 },
+  "weather+physiological":      { effect: "amplifying",    description: "Cold weather + health symptoms = flu season acceleration, public health narrative", multiplier: 1.3 },
+  "weather+economic":           { effect: "compounding",   description: "Weather disruption + economic weakness = amplified consumer/business stress", multiplier: 1.3 },
+  "physiological+social":       { effect: "amplifying",    description: "Individual health + widespread phenomenon = public health narrative, behavioral shift at scale", multiplier: 1.3 },
+  "technology+policy":          { effect: "pivotal",       description: "Tech progress meets regulation = direction can flip. High uncertainty, high impact", multiplier: 1.2 },
+  "technology+geopolitical":    { effect: "compounding",   description: "Tech competition + geopolitical tension = supply chain decoupling risk", multiplier: 1.4 },
+  "economic+geopolitical":      { effect: "compounding",   description: "Economic weakness + geopolitical shock = stagflation risk, maximum uncertainty", multiplier: 1.4 },
+  "economic+social":            { effect: "amplifying",    description: "Economic signal + social trend = consumer behavior structural shift", multiplier: 1.2 },
+  "social+technology":          { effect: "accelerating",  description: "Social adoption accelerates tech cycle — viral adoption curves", multiplier: 1.2 },
+  "geopolitical+policy":        { effect: "compounding",   description: "Geopolitical conflict + policy response = sanctions/tariffs cascade", multiplier: 1.3 },
+  "weather+nature":             { effect: "amplifying",    description: "Weather extreme + natural disaster = insurance/rebuilding demand surge", multiplier: 1.4 },
+  "physiological+economic":     { effect: "amplifying",    description: "Health crisis + economic impact = healthcare spending + macro concern", multiplier: 1.2 },
+};
+
+function getInteractionEffect(types: string[]): { effect: InteractionEffect | null; key: string } {
+  if (types.length < 2) return { effect: null, key: "" };
+
+  // Try all pairs
+  for (let i = 0; i < types.length; i++) {
+    for (let j = i + 1; j < types.length; j++) {
+      const key1 = `${types[i]}+${types[j]}`;
+      const key2 = `${types[j]}+${types[i]}`;
+      if (INTERACTION_MATRIX[key1]) return { effect: INTERACTION_MATRIX[key1], key: key1 };
+      if (INTERACTION_MATRIX[key2]) return { effect: INTERACTION_MATRIX[key2], key: key2 };
+    }
+  }
+  return { effect: null, key: "" };
+}
+
 // ======================================================================
-// Section 3: 历史案例库 (from historical-echo.ts)
+// Section 3: Historical Cases (Enhanced Matching v3)
 // ======================================================================
 
 interface HistCase {
@@ -371,24 +614,56 @@ const CASES: HistCase[] = [
     disciplines: ["Geopolitics","Economics","Supply Chain"], outcome: "WTI $60→-$37; XLE -50%; USO structural losses", tickers: ["USO","XLE","XOM","COP","OXY"], sector: "energy", magnitude: "extreme", time_to_impact: "Immediate to 1 year", lesson: "Supply war + demand crash = unprecedented; negative oil proves storage is a physical constraint", tags: ["oil","OPEC","Saudi","price war","energy","crude","负油价","石油","原油","能源","油价","暴跌","OPEC"] },
 ];
 
-function searchCases(keywords: string[]): Array<{ case_data: HistCase; score: number }> {
-  const results: Array<{ case_data: HistCase; score: number }> = [];
+// Enhanced case search with recency, seasonal alignment, magnitude weighting
+function searchCases(
+  keywords: string[],
+  currentMonth: number,
+  currentYear: number = 2026
+): Array<{ case_data: HistCase; score: number; recency_weight: number; seasonal_match: boolean }> {
+  const results: Array<{ case_data: HistCase; score: number; recency_weight: number; seasonal_match: boolean }> = [];
+
   for (const c of CASES) {
     let score = 0;
+
+    // Base keyword matching (unchanged)
     for (const kw of keywords) {
       const kwLower = kw.toLowerCase();
       if (c.tags.some((t) => t.toLowerCase().includes(kwLower) || kwLower.includes(t.toLowerCase()))) score += 3;
       if (c.trigger.toLowerCase().includes(kwLower)) score += 2;
       if (c.chain_summary.toLowerCase().includes(kwLower)) score += 1;
     }
-    if (score > 0) results.push({ case_data: c, score });
+
+    if (score === 0) continue;
+
+    // Recency bonus: newer cases are more relevant
+    const yearDiff = currentYear - c.year;
+    const recency_weight = 1 / (1 + yearDiff * 0.15);
+    score += Math.max(0, Math.round(10 - yearDiff * 1.5));
+
+    // Magnitude bonus: extreme/large cases are more instructive
+    const magBonus: Record<string, number> = { extreme: 5, large: 3, medium: 1 };
+    score += magBonus[c.magnitude] || 0;
+
+    // Seasonal alignment (rough: winter = 11,12,1,2; summer = 5,6,7,8)
+    const winterMonths = new Set([11, 12, 1, 2]);
+    const summerMonths = new Set([5, 6, 7, 8]);
+    const caseIsWinter = c.tags.some(t => ["cold", "freeze", "snow", "flu", "寒潮", "降温", "感冒", "冷"].includes(t.toLowerCase()));
+    const caseIsSummer = c.tags.some(t => ["hot", "heat", "drought", "hurricane", "热", "高温", "干旱", "飓风"].includes(t.toLowerCase()));
+    const seasonal_match =
+      (caseIsWinter && winterMonths.has(currentMonth)) ||
+      (caseIsSummer && summerMonths.has(currentMonth)) ||
+      (!caseIsWinter && !caseIsSummer);
+    if (seasonal_match) score += 3;
+
+    results.push({ case_data: c, score, recency_weight, seasonal_match });
   }
+
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, 3);
 }
 
 // ======================================================================
-// Section 4: 事件类型→学科知识速查（注入到工具输出，让LLM有知识可用）
+// Section 4: Discipline Knowledge (unchanged)
 // ======================================================================
 
 const DISCIPLINE_KNOWLEDGE: Record<string, string> = {
@@ -564,25 +839,91 @@ const DISCIPLINE_KNOWLEDGE: Record<string, string> = {
 };
 
 // ======================================================================
-// Section 5: 注册合一工具
+// Section 4.5: Structured Quantitative Anchors (NEW v3)
+// ======================================================================
+
+interface QuantAnchor {
+  metric: string;
+  value: string;
+  source: string;
+  usage: string;
+}
+
+const QUANTITATIVE_ANCHORS: Record<string, QuantAnchor[]> = {
+  physiological: [
+    { metric: "CDC ILI baseline", value: "~2.5%", source: "CDC ILINet weekly", usage: "Above 3.5% = flu season running hot. Current week's ILI vs baseline determines if health thesis is active." },
+    { metric: "US annual flu healthcare spend", value: "$11B normal, $20B+ severe", source: "CMS", usage: "Calibrate magnitude: severe season adds ~$9B to healthcare spending." },
+    { metric: "OTC cold medicine market", value: "~$10B/yr, seasonal swing ±15-20%", source: "Nielsen", usage: "KMB/PG/KVUE exposure calculation. A 20% swing = $2B, split across many companies." },
+    { metric: "Flu drugs as % of big pharma revenue", value: "<5% for PFE, JNJ", source: "Company 10-K", usage: "This is why big pharma chains score LOW. Even doubling flu revenue barely moves EPS." },
+    { metric: "Diagnostic test volume in severe season", value: "2-3x normal", source: "QDEL/ABT earnings", usage: "QDEL revenue elasticity is the highest in this chain. Historical: +8-15% quarterly beat." },
+    { metric: "Sick-day delivery order uplift", value: "+8-12% vs baseline week", source: "DASH/UBER earnings commentary", usage: "Behavioral chain evidence for stay-at-home consumption thesis." },
+  ],
+  weather: [
+    { metric: "HDD sensitivity", value: "10% deviation → nat gas ±5-8%", source: "EIA/NOAA", usage: "Convert weather forecast deviation into nat gas price estimate." },
+    { metric: "Nat gas inventory vs 5yr avg", value: ">15% below = upside risk", source: "EIA weekly storage", usage: "If inventories low AND cold snap → compounding upside for UNG/XLE." },
+    { metric: "EIA storage report", value: "Every Thursday", source: "EIA", usage: "Strongest short-term catalyst for nat gas. Draw >100 Bcf in winter = bullish signal." },
+    { metric: "Hurricane oil impact", value: "Cat 3+ Gulf → oil +5-15%", source: "Historical average", usage: "Only applies Jun-Nov, Gulf Coast landfall." },
+    { metric: "ERCOT reserve margin threshold", value: "<6% = curtailment risk", source: "ERCOT", usage: "Texas grid stress = electricity price spikes." },
+  ],
+  economic: [
+    { metric: "Core PCE vs Fed action", value: ">3% no cuts, >4% possible hikes, <2.5% cut window", source: "BEA/Fed", usage: "Single most important variable for rate-sensitive sectors." },
+    { metric: "10Y yield → QQQ sensitivity", value: "Every 100bp rise → QQQ -8% to -12%", source: "Historical regression", usage: "Quantify tech impact from rate moves." },
+    { metric: "Unemployment recession threshold", value: ">4.5% = recession warning", source: "BLS", usage: "Below 4% = tight labor → wage inflation. Above 4.5% = recession probability rises sharply." },
+    { metric: "ISM PMI recession signal", value: "<47 = high recession probability", source: "ISM", usage: "Manufacturing contraction at this level historically precedes recession 70%+ of the time." },
+    { metric: "Yield curve inversion lead time", value: "12-18 months before recession", source: "Fed research", usage: "2Y-10Y inversion is warning, but timing is imprecise." },
+  ],
+  geopolitical: [
+    { metric: "VIX reaction to geopolitical events", value: "+5 to +15 points", source: "Historical average", usage: "Most revert within 2-4 weeks. Only sustained if real supply disruption." },
+    { metric: "Russia's global resource share", value: "Oil 12%, gas 17%, palladium 40%, wheat 18%", source: "IEA/USDA", usage: "Quantify supply disruption impact from Russia-related events." },
+    { metric: "TSMC advanced chip share", value: ">80% of 7nm and below", source: "Industry data", usage: "Taiwan Strait risk = semiconductor extinction event. Tail risk only." },
+    { metric: "Strait of Hormuz oil flow", value: "~20% of global trade", source: "EIA", usage: "Middle East escalation risk quantification." },
+  ],
+  technology: [
+    { metric: "NVDA GPU market share", value: ">80% AI training", source: "Industry estimates", usage: "Bottleneck owner = pricing power. But share can erode with AMD/custom chips." },
+    { metric: "TSMC utilization threshold", value: ">95% = strong pricing, <80% = downturn", source: "TSMC earnings", usage: "Leading indicator for semiconductor cycle." },
+    { metric: "Semiconductor inventory cycle", value: "~3-4 year full cycle", source: "Industry data", usage: "Inventory/revenue >1.5x = glut warning, <0.8x = shortage signal." },
+    { metric: "Data center power growth", value: "20-30% CAGR through 2030", source: "IEA/McKinsey", usage: "Structural demand for VST, CEG, nuclear power." },
+  ],
+};
+
+function getQuantAnchors(eventTypes: string[]): QuantAnchor[] {
+  const anchors: QuantAnchor[] = [];
+  const seen = new Set<string>();
+  for (const t of eventTypes) {
+    const typeAnchors = QUANTITATIVE_ANCHORS[t];
+    if (typeAnchors) {
+      for (const a of typeAnchors) {
+        if (!seen.has(a.metric)) {
+          seen.add(a.metric);
+          anchors.push(a);
+        }
+      }
+    }
+  }
+  return anchors;
+}
+
+// ======================================================================
+// Section 5: Register Tool (Enhanced v3 output)
 // ======================================================================
 
 export function registerMrIfReason(server: McpServer): void {
   server.tool(
     "mr_if_reason",
-    `Mr.IF butterfly-effect reasoning engine. Input any everyday event, returns: event classification, chain templates, historical precedents, discipline knowledge, and a complexity-based reasoning depth recommendation.
+    `Mr.IF butterfly-effect reasoning engine v3. Input any everyday event, returns: event classification, chain templates WITH pre-scores (0-100) and ticker seeds, event interaction effects, enhanced historical precedents, structured quantitative anchors, discipline knowledge, and complexity-based reasoning depth recommendation.
 This is Mr.IF's core reasoning tool — MUST be called BEFORE all other tools.
 User says "it's getting cold" → not asking to buy a jacket, asking which US stocks to watch. ALWAYS interpret user input from a financial perspective.`,
     {
-      user_input: z.string().describe("User's raw input, e.g. 'it's getting cold', 'Trump is at it again'"),
+      user_input: z.string().describe("User's raw input, e.g. 'everyone's been sick lately', 'Trump is at it again'"),
       current_date: z.string().optional().describe("Current date YYYY-MM-DD"),
     },
     async ({ user_input, current_date }) => {
       const date = current_date ? new Date(current_date) : new Date();
       const month = date.getMonth() + 1;
+      const year = date.getFullYear();
       const seasonContext = SEASONAL_CONTEXT[month] || "";
 
-      // 1. 事件分类
+      // 1. Event classification
       const cls = classifyEvent(user_input);
       const primaryInfo = EVENT_TYPES[cls.primary_type as keyof typeof EVENT_TYPES];
       const allDirections: string[] = primaryInfo ? [...primaryInfo.reasoning_angles] : ["Consumer trend"];
@@ -602,22 +943,39 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
         templateKeys = templateKeys.slice(0, 5);
       }
 
-      const chains = templateKeys.map((key, i) => {
+      // 2.6 Event interaction
+      const allTypes = [cls.primary_type, ...cls.secondary_types];
+      const interaction = getInteractionEffect(allTypes);
+
+      // 3. Historical cases (enhanced)
+      const allKw = [...cls.matched_keywords, ...user_input.split(/[\s,，。！？]+/).filter((w) => w.length > 1)];
+      const histMatches = searchCases(allKw, month, year);
+
+      // 4. Compute chain pre-scores
+      const interactionMultiplier = interaction.effect?.multiplier || 1.0;
+      const scoredChains = templateKeys.map((key, i) => {
         const tpl = CHAIN_TEMPLATES[key];
+        const scoreResult = computeChainScore(
+          key, tpl, histMatches, month, cls.matched_keywords.length, interactionMultiplier
+        );
         return {
           chain_id: i + 1,
-          name: tpl?.name || key,
-          pattern: tpl?.pattern || "General reasoning",
-          disciplines: tpl?.disciplines || ["Economics"],
-          typical_steps: tpl?.typical_steps || 4,
+          template_key: key,
+          name: tpl.name,
+          pattern: tpl.pattern,
+          disciplines: tpl.disciplines,
+          typical_steps: tpl.typical_steps,
+          sector_hints: tpl.sector_hints,
+          ticker_seeds: tpl.ticker_seeds,
+          magnitude_range: tpl.magnitude_range,
+          score: scoreResult,
         };
       });
 
-      // 3. 历史案例
-      const allKw = [...cls.matched_keywords, ...user_input.split(/[\s,，。！？]+/).filter((w) => w.length > 1)];
-      const histMatches = searchCases(allKw);
+      // Sort by score (highest first) for recommendation
+      const sortedChains = [...scoredChains].sort((a, b) => b.score.total - a.score.total);
 
-      // 4. Discipline knowledge injection (by event type — now up to 3 types)
+      // 5. Discipline knowledge injection
       const primaryKnowledge = DISCIPLINE_KNOWLEDGE[cls.primary_type] || DISCIPLINE_KNOWLEDGE["daily"] || "";
       const secondaryKnowledge = cls.secondary_types
         .slice(0, 2)
@@ -625,26 +983,57 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
         .filter(Boolean)
         .join("\n\n");
 
-      // 5. Build output sections
+      // 6. Quantitative anchors
+      const anchors = getQuantAnchors([cls.primary_type, ...cls.secondary_types.slice(0, 2)]);
+
+      // 7. Build output
+      const interactionSection = interaction.effect
+        ? `## 1.5 Event Interaction [COMPUTED]
+- Detected: **${interaction.key}** = **${interaction.effect.effect}** (${interaction.effect.multiplier}x confidence multiplier)
+- Meaning: ${interaction.effect.description}
+- Impact: Chain scores have been adjusted by +${Math.round((interaction.effect.multiplier - 1) * 20)} points for interaction effect.\n`
+        : "";
+
+      const chainSection = sortedChains.map((c) => {
+        const bd = c.score;
+        const scoreBar = bd.total >= 65 ? "■".repeat(Math.round(bd.total / 10)) : bd.total >= 45 ? "■".repeat(Math.round(bd.total / 10)) : "■".repeat(Math.round(bd.total / 10));
+        return `**Chain ${c.chain_id}: ${c.name}** — Score: **${bd.total}/100 [${bd.rating}]** ${scoreBar}
+- Pattern: ${c.pattern}
+- Disciplines: ${c.disciplines.join(" → ")}
+- Typical steps: ${c.typical_steps}
+- Score breakdown: base(${bd.base}) + hist(${bd.historical_match}) + season(${bd.seasonal_alignment}) + discipline(${bd.multi_discipline}) + keywords(${bd.keyword_density}) + length(${bd.chain_length_penalty}) + consensus(${bd.consensus_penalty}) + materiality(${bd.revenue_materiality_adj}) + interaction(${bd.interaction_bonus})
+- Sector hints: ${c.sector_hints.join(", ")}
+- Ticker seeds: Bullish [${c.ticker_seeds.bullish.join(", ") || "—"}] / Bearish [${c.ticker_seeds.bearish.join(", ") || "—"}]
+- Expected magnitude: ${c.magnitude_range}${bd.flags.length > 0 ? "\n- FLAGS: " + bd.flags.join(" | ") : ""}`;
+      }).join("\n\n");
+
       const histSection = histMatches.length > 0
-        ? histMatches.map(({ case_data: c, score }) =>
-            `**${c.title}** (${c.year}, relevance: ${score})\n` +
-            `- Trigger: ${c.trigger}\n` +
-            `- Chain: ${c.chain_summary}\n` +
-            `- Outcome: ${c.outcome}\n` +
-            `- Tickers: ${c.tickers.join(", ")}\n` +
-            `- Lesson: ${c.lesson}`
+        ? histMatches.map(({ case_data: c, score, recency_weight, seasonal_match }) =>
+            `**${c.title}** (${c.year}, relevance: ${score}, recency: ${recency_weight.toFixed(2)}, seasonal: ${seasonal_match ? "aligned" : "misaligned"})
+- Trigger: ${c.trigger}
+- Chain: ${c.chain_summary}
+- Outcome: ${c.outcome}
+- Tickers: ${c.tickers.join(", ")}
+- Lesson: ${c.lesson}`
           ).join("\n\n")
-        : "No direct historical match. This is novel territory — build chains carefully and note the absence of precedent. Consider News Search for analogous events.";
+        : "No direct historical match. This is novel territory — build chains carefully and note the absence of precedent.";
 
-      const chainSection = chains.map((c) =>
-        `**Chain ${c.chain_id}: ${c.name}**\n` +
-        `- Pattern: ${c.pattern}\n` +
-        `- Disciplines: ${c.disciplines.join(" → ")}\n` +
-        `- Typical steps: ${c.typical_steps}`
-      ).join("\n\n");
+      const anchorSection = anchors.length > 0
+        ? anchors.map(a => `| ${a.metric} | ${a.value} | ${a.source} | ${a.usage} |`).join("\n")
+        : "No structured anchors for this event type.";
 
-      const output = `# Mr.IF Reasoning Engine Output
+      // Recommendation summary
+      const strongChains = sortedChains.filter(c => c.score.rating === "STRONG");
+      const weakChains = sortedChains.filter(c => c.score.rating === "WEAK");
+      const recommendationSummary = `## 7. Recommendation Summary [COMPUTED]
+- **Lead with**: ${strongChains.length > 0 ? strongChains.map(c => `${c.name} (${c.score.total}pts)`).join(", ") : sortedChains[0] ? `${sortedChains[0].name} (${sortedChains[0].score.total}pts, best available)` : "No strong chain"}
+- **Support with**: ${sortedChains.filter(c => c.score.rating === "MODERATE").map(c => `${c.name} (${c.score.total}pts)`).join(", ") || "None"}
+- **Debunk/deprioritize**: ${weakChains.length > 0 ? weakChains.map(c => `${c.name} (${c.score.total}pts — ${c.score.flags[0] || "low score"})`).join(", ") : "None"}
+- **Narrative arc**: ${weakChains.length > 0 && strongChains.length > 0
+  ? `"Most people think ${weakChains[0].name.split("→")[0].trim()} — but the real play is ${strongChains[0].name.split("→")[0].trim()}"`
+  : "Follow chain score ranking for narrative priority."}`;
+
+      const output = `# Mr.IF Reasoning Engine Output v3
 
 ## 1. Event Classification
 - User input: "${user_input}"
@@ -656,22 +1045,31 @@ User says "it's getting cold" → not asking to buy a jacket, asking which US st
 - Complexity: **${complexity}**
 - Second-order recommended: **${secondOrder ? "yes — your conclusion likely has a consensus first-order reaction, look for what the market is missing" : "no — focus on building solid chains rather than forcing contrarian angles"}**
 
-## 2. Reasoning Directions
+${interactionSection}## 2. Reasoning Directions
 ${allDirections.map((d, i) => `${i + 1}. ${d}`).join("\n")}
 
-## 3. Chain Templates
+## 3. Chain Templates (Pre-Scored, sorted by score)
 ${chainSection}
 
-You may supplement or adjust these templates based on your own reasoning. Each chain step: content + discipline + "because..."
+You may supplement or adjust these templates. Use scores to prioritize: STRONG chains lead your narrative, WEAK chains are mentioned only to debunk or note as consensus traps.
 
-## 4. Historical Precedents
+## 4. Historical Precedents (Enhanced)
 ${histSection}
 
-## 5. Discipline Knowledge
+## 5. Quantitative Anchors
+| Metric | Value | Source | How to Use |
+|--------|-------|--------|-----------|
+${anchorSection}
+
+Use these numbers in your reasoning. When you cite a number, reference the source. If uncertain about current values, flag for verification with data tools.
+
+## 6. Discipline Knowledge
 ${primaryKnowledge}
 ${secondaryKnowledge ? `\n${secondaryKnowledge}` : ""}
 
-Now follow the **reasoning-discipline** protocol in your thinking. Depth = **${complexity}**. Then proceed to external tools.`;
+${recommendationSummary}
+
+Now follow the **reasoning-discipline** protocol in your thinking. Depth = **${complexity}**. Use chain scores to allocate reasoning effort. Then proceed to external tools.`;
 
       return {
         content: [{ type: "text" as const, text: output }],
