@@ -1,24 +1,21 @@
 <p align="center">
   <h1 align="center">Mr.IF</h1>
-  <p align="center"><strong>From butterfly wings to market swings.</strong></p>
-  <p align="center">
-    A causal-reasoning AI agent that traces everyday events to US equity signals through multi-disciplinary butterfly-effect analysis.
-  </p>
+  <p align="center"><em>Tell it anything. It tells you which US stocks to watch — and why.</em></p>
 </p>
 
 <p align="center">
+  <a href="#what-is-mrif">What</a> •
+  <a href="#see-it-in-action">Demo</a> •
+  <a href="#how-it-works">How</a> •
   <a href="#quick-start">Quick Start</a> •
-  <a href="#how-it-works">How It Works</a> •
   <a href="#architecture">Architecture</a> •
-  <a href="#mcp-tool">MCP Tool</a> •
-  <a href="#skills">Skills</a> •
   <a href="#coverage">Coverage</a> •
   <a href="#license">License</a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/runtime-Node.js_18+-339933?logo=node.js&logoColor=white" />
-  <img src="https://img.shields.io/badge/protocol-MCP-7C3AED?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTEyIDJMMiA3bDEwIDUgMTAtNS0xMC01ek0yIDE3bDEwIDUgMTAtNS0xMC01LTEwIDV6TTIgMTJsMTAgNSAxMC01LTEwLTUtMTAgNXoiLz48L3N2Zz4=" />
+  <img src="https://img.shields.io/badge/protocol-MCP-7C3AED" />
   <img src="https://img.shields.io/badge/market-NYSE_|_NASDAQ-1E40AF" />
   <img src="https://img.shields.io/badge/license-MIT-green" />
   <img src="https://img.shields.io/badge/TypeScript-5.3+-3178C6?logo=typescript&logoColor=white" />
@@ -28,107 +25,131 @@
 
 ## What is Mr.IF?
 
-**Mr.IF** is an MCP-powered reasoning engine that answers one question:
+**Mr.IF** is an AI reasoning agent that connects **any everyday event** — weather, health, politics, a gut feeling — to **actionable US stock signals** through butterfly-effect causal analysis.
 
-> *"Something just happened in the world — what does it mean for US stocks?"*
+It doesn't just search the news. It **reasons** — building multi-disciplinary causal chains (physiology → epidemiology → pharma supply chain → ticker), validating them against 15 historical precedents, and delivering the output like a sharp financial advisor sitting across the table from you.
 
-Input anything — a weather change, a sneeze, a geopolitical headline, a viral trend — and Mr.IF builds rigorous **multi-disciplinary causal chains** (psychology → economics → supply chain → equity impact) to surface actionable US stock and ETF signals.
+> "It's getting cold today" → Energy midstream plays, construction delays, indoor consumption shifts, specific tickers, time horizons, and what to watch for next.
 
-It doesn't guess. It **reasons** — through a proprietary 7-Gate reasoning protocol with built-in anti-hallucination checks, cross-validated against 15 historical butterfly-effect precedents.
+> "I saw Elon Musk looking lonely at an event" → Social sentiment analysis, Tesla leadership risk, SpaceX defense positioning, contrarian plays on overreaction.
 
-### Example
+> "Trump might do something crazy" → Tariff risk chains, geopolitical safe-haven flows, volatility beneficiaries, historical trade-war parallels.
 
-```
-You:    "It's getting cold today"
+**Built as an [MCP](https://modelcontextprotocol.io/) server** — plug it into any LLM that supports the Model Context Protocol (Claude, Cursor, etc.).
 
-Mr.IF:  → Classifies as WEATHER event
-        → Builds 4 causal chains (energy demand, consumer behavior, agriculture, construction)
-        → Cross-validates against Texas Freeze 2021, US Drought 2012
-        → Surfaces: ET, UNG, NFLX, DHI with direction, timeframe, conviction
-        → Flags key catalysts: EIA inventory report, NOAA extended forecast
-```
+---
+
+## See It In Action
+
+**You:** *"It's getting cold today"*
+
+**Mr.IF:**
+
+> Temperature dropping — on the surface it's just weather, but there are a few threads worth pulling.
+>
+> **Energy is the most direct play.** Late February, tail end of heating season. If this cold snap extends into March, natural gas inventory draws will overshoot expectations. Thursday's EIA storage report is the key catalyst — if the draw exceeds 100 Bcf, gas prices pop. The interesting angle isn't upstream producers — it's midstream. ET and WMB earn on transport volume, so a volume spike hits their margin leverage harder, and you've got 7%+ dividend yields as a floor.
+>
+> **Consumer behavior shifts too.** Cold keeps people indoors — NFLX gets an engagement boost if it coincides with a strong content cycle. More interesting than the obvious AMZN "e-commerce in bad weather" play that gets trotted out every winter.
+>
+> **On the flip side,** if this cold is just a day or two, gas prices could pull back on "not as cold as feared." And homebuilders like DHI see Q1 starts data come in soft if weather delays pile up.
+>
+> | Ticker | Why | Direction | Time | Conviction |
+> |--------|-----|-----------|------|------------|
+> | ET | Midstream volume beneficiary, 7%+ yield floor | Bullish | 2-4 weeks | High |
+> | UNG | Nat gas ETF, direct gas price exposure | Bullish | 1-2 weeks | Medium |
+> | NFLX | Indoor entertainment substitute | Bullish | 1-2 months | Medium |
+> | DHI | Construction delays pressure Q1 starts | Bearish | 1 month | Medium |
+>
+> **Key Catalysts:** EIA nat gas storage (Thursday), NOAA extended forecast, CDC flu data
+>
+> *Causal reasoning exercise — not investment advice. Do your own due diligence.*
+
+That's what the user sees. Behind the scenes, Mr.IF built 3 causal chains across 5 disciplines, validated each one, compared against the Texas Deep Freeze 2021 precedent, and scored them before ever touching external data tools.
 
 ---
 
 ## How It Works
 
 ```
-User Input ─── "my allergies are acting up"
+User Input ─── "it's getting cold"
      │
      ▼
- ┌─────────────────────────────────────────────────┐
- │  Step 1: mr_if_reason (MCP Tool)                │
- │  → Event classification (physiological)         │
- │  → Chain template matching (3-5 templates)      │
- │  → Historical precedent search (15 cases)       │
- │  → Domain knowledge injection (10 disciplines)  │
- │  → Validation framework + scoring rubric        │
- │  → 7-Gate reasoning protocol instructions       │
- └────────────────────┬────────────────────────────┘
-                      │
-                      ▼
- ┌─────────────────────────────────────────────────┐
- │  Step 2: 7-Gate Internal Reasoning (in LLM)     │
- │  Gate 1  Event Anchoring — financial interpret.  │
- │  Gate 2  Chain Building — 3+ chains, each with  │
- │          discipline tags + "because..." logic    │
- │  Gate 3  Validation — 6-dim scoring, drop weak  │
- │  Gate 4  Historical Comparison — match cases     │
- │  Gate 5  Confluence — convergence & conflict     │
- │  Gate 6  Second-Order — hidden winners/losers    │
- │  Gate 7  Exit Check — 10-point quality gate      │
- └────────────────────┬────────────────────────────┘
-                      │
-                      ▼
- ┌─────────────────────────────────────────────────┐
- │  Step 3: External Tool Orchestration            │
- │  Industry Mapper → Security Mapper → Data API   │
- │  + Conditional: news search, DCF, Monte Carlo,  │
- │    sentiment, technicals, volume scanner...      │
- └────────────────────┬────────────────────────────┘
-                      │
-                      ▼
- ┌─────────────────────────────────────────────────┐
- │  Step 4: RIA-Style Output                       │
- │  Conversational, multi-angle analysis with      │
- │  ticker table + catalysts + risk disclaimer     │
- └─────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────┐
+│  Step 1: mr_if_reason (MCP Tool)              │
+│  One call returns everything:                 │
+│  • Event classification + complexity level    │
+│  • Chain templates (matched to input)         │
+│  • Historical precedent search (15 cases)     │
+│  • Discipline knowledge injection             │
+│  • Adaptive depth recommendation              │
+└───────────────────┬───────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────┐
+│  Step 2: Adaptive Reasoning (in LLM thinking) │
+│                                               │
+│  Depth scales to input complexity:            │
+│  Light  → 2 chains, basic validation          │
+│  Medium → 2-3 chains + historical + 2nd-order │
+│  Heavy  → 3-4 chains, full analysis           │
+│                                               │
+│  Anti-hallucination: no reverse-engineering,  │
+│  every step needs "because...", honest about  │
+│  weak links, numbers need sources             │
+└───────────────────┬───────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────┐
+│  Step 3: External Tool Orchestration          │
+│  Industry Mapper → Security Mapper → Data API │
+│  + Conditional: news, DCF, sentiment, etc.    │
+└───────────────────┬───────────────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────────────┐
+│  Step 4: RIA-Style Output                     │
+│  Conversational analysis + ticker table       │
+│  + key catalysts + risk disclaimer            │
+└───────────────────────────────────────────────┘
 ```
+
+### Why adaptive depth?
+
+Not every input deserves the same analysis. "I sneezed" needs 2 solid chains. "Trade war + Fed meeting + cold snap" needs full-depth multi-factor analysis. The tool assesses complexity automatically and tells the LLM how deep to go — preventing both over-engineering simple inputs and under-analyzing complex ones.
 
 ---
 
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                    Mr.IF Agent Layer                      │
-│                 (System Prompt Orchestration)             │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│   MCP Toolkit (this repo)                                │
-│                                                          │
-│   ┌─ mr_if_reason ──────────────────────────────────┐    │
-│   │  Unified reasoning engine — one call, full       │    │
-│   │  framework output:                               │    │
-│   │  • Event classifier (9 categories)               │    │
-│   │  • Chain template matcher (12 patterns)          │    │
-│   │  • Historical echo search (15 precedents)        │    │
-│   │  • Discipline knowledge injector (10 fields)     │    │
-│   │  • Validation framework (6-dimensional)          │    │
-│   │  • 7-Gate protocol enforcer                      │    │
-│   └──────────────────────────────────────────────────┘    │
-│                                                          │
-│   Skills (MCP Resources)                                 │
-│   ├─ butterfly-effect-chain     Core methodology         │
-│   ├─ cross-domain-reasoning     10-discipline handbook   │
-│   ├─ second-order-thinking      Contrarian framework     │
-│   └─ reasoning-discipline       7-Gate protocol          │
-│                                                          │
-├──────────────────────────────────────────────────────────┤
-│   External Tools (orchestrated via system prompt)        │
-│   Industry Mapper │ Security Mapper │ Market Data API    │
-│   News Search │ DCF │ Monte Carlo │ Sentiment │ ...      │
-└──────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                  Mr.IF Agent Layer                     │
+│               (System Prompt Orchestration)            │
+├──────────────────────────────────────────────────────┤
+│                                                       │
+│   MCP Toolkit (this repo)                             │
+│                                                       │
+│   ┌─ mr_if_reason ─────────────────────────────────┐  │
+│   │  Unified reasoning engine — one call returns:  │  │
+│   │  • Event classifier (9 categories)             │  │
+│   │  • Chain template matcher (16 patterns)        │  │
+│   │  • Historical echo search (15 precedents)      │  │
+│   │  • Discipline knowledge injector (10 fields)   │  │
+│   │  • Complexity assessor (light/medium/heavy)    │  │
+│   │  • Conditional second-order routing            │  │
+│   └────────────────────────────────────────────────┘  │
+│                                                       │
+│   Skills (MCP Resources — knowledge base)             │
+│   ├─ butterfly-effect-chain    Core reasoning method  │
+│   ├─ cross-domain-reasoning    10-discipline handbook │
+│   ├─ second-order-thinking     Contrarian framework   │
+│   └─ reasoning-discipline      Adaptive protocol      │
+│                                                       │
+├──────────────────────────────────────────────────────┤
+│   External Tools (orchestrated via system prompt)     │
+│   Industry Mapper │ Security Mapper │ Market Data     │
+│   News Search │ DCF │ Monte Carlo │ Sentiment │ ...   │
+└──────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -136,96 +157,89 @@ User Input ─── "my allergies are acting up"
 ## Quick Start
 
 ```bash
-# Install
-npm install
+# Clone
+git clone https://github.com/superiron888/predictionfromdailyevent.git
+cd predictionfromdailyevent
 
-# Build
-npm run build
+# Install & Build
+npm install && npm run build
 
-# Run MCP Server
+# Run
 npm start
-
-# Development mode
-npm run dev
-
-# Debug with MCP Inspector
-npm run inspect
 ```
 
-### MCP Configuration
+### Connect to your LLM
+
+Add to your MCP client config (Claude Desktop, Cursor, etc.):
 
 ```json
 {
   "mcpServers": {
     "mr-if": {
       "command": "node",
-      "args": ["/path/to/mr.if/dist/index.js"]
+      "args": ["/path/to/predictionfromdailyevent/dist/index.js"]
     }
   }
 }
 ```
 
----
-
-## MCP Tool
-
-| Tool | Input | Output |
-|------|-------|--------|
-| `mr_if_reason` | Raw user input + optional date context | Structured markdown: event classification, chain templates, historical cases, discipline knowledge, validation framework, 7-Gate instructions |
-
-### Why one tool?
-
-Traditional multi-tool architectures create coordination overhead and allow the LLM to skip steps. Mr.IF consolidates all reasoning scaffolding into a **single atomic call** — the LLM gets everything it needs to reason correctly, with no escape hatch.
+Then just talk to it naturally: *"It's freezing outside"*, *"Trump is tweeting again"*, *"I just sneezed"* — Mr.IF handles the rest.
 
 ---
 
-## Skills
+## What Makes This Different
 
-| Skill | Purpose | Highlights |
-|-------|---------|------------|
-| `butterfly-effect-chain` | Core reasoning methodology | 3 laws, 12 chain patterns, quality checklist |
-| `cross-domain-reasoning` | Multi-disciplinary knowledge base | 10 disciplines × quantitative anchors × common pitfalls × bridge rules |
-| `second-order-thinking` | Contrarian & expectation analysis | 5 detection tools, consensus inversion, hidden winner/loser framework |
-| `reasoning-discipline` | Reasoning quality enforcement | 7-Gate protocol, anti-hallucination rules, exit checklist |
+| | Traditional Finance Bots | Mr.IF |
+|---|---|---|
+| Input | "What's happening with AAPL?" | "I sneezed today" |
+| Method | News summary + sentiment | Multi-disciplinary causal reasoning |
+| Depth | Surface-level | 3-6 step causal chains across 10 disciplines |
+| Validation | None | Historical precedent matching + anti-hallucination checks |
+| Output | Generic summary | Specific tickers + direction + timeframe + conviction + catalysts |
+| Voice | Robot | Trusted financial advisor |
 
 ---
 
 ## Coverage
 
-### Event Types (9)
+### 9 Event Types
 
-`Physiological` · `Weather` · `Economic` · `Social` · `Technology` · `Policy` · `Natural Disaster` · `Daily Observation` · `Geopolitical`
+`Physiological` · `Weather & Climate` · `Economic Signal` · `Social Trend` · `Technology` · `Policy & Regulation` · `Natural Disaster` · `Daily Observation` · `Geopolitical`
 
-### Disciplines (10)
+### 10 Disciplines
 
-`Psychology` · `Physiology` · `Physics` · `Chemistry` · `Economics` · `Meteorology` · `Sociology` · `Geopolitics` · `Supply Chain` · `Market Mechanics`
+`Psychology` · `Physiology` · `Physics & Energy` · `Chemistry` · `Economics` · `Meteorology` · `Sociology` · `Geopolitics` · `Supply Chain` · `Market Mechanics`
 
-### Historical Precedents (15)
+### 16 Chain Templates
 
-| Case | Year | Butterfly Effect |
-|------|------|-----------------|
-| COVID-19 Pandemic | 2020 | Virus → global lockdown → remote work revolution → tech mega-rally |
-| Texas Deep Freeze | 2021 | Polar vortex → grid collapse → nat gas 400% spike → energy infra repricing |
-| Hurricane Katrina | 2005 | Category 5 → refinery shutdown → gasoline crisis → insurance repricing |
-| Russia-Ukraine War | 2022 | Invasion → energy embargo → European energy crisis → US LNG boom |
-| US-China Trade War | 2018 | Tariffs → supply chain rewiring → Vietnam/India manufacturing boom |
-| Fed Pivot Signal | 2023 | Dovish language → rate cut expectation → 60/40 portfolio rotation |
-| ChatGPT Launch | 2022 | AI chatbot → compute demand explosion → NVIDIA supercycle |
-| GameStop Squeeze | 2021 | Reddit → short squeeze → market structure reform discussion |
-| Fed Rate Hike Cycle | 2022 | 0→5.25% → growth-to-value rotation → bank stress |
-| Bitcoin ETF Approval | 2024 | SEC approval → institutional inflow → crypto mainstreaming |
-| GLP-1 / Ozempic | 2023 | Weight loss drug → obesity disruption → food/medtech repricing |
-| Suez Canal Block | 2021 | Ship stuck → shipping rate spike → supply chain bottleneck |
-| SVB Collapse | 2023 | Bank run → regional bank contagion → TBTF premium |
-| US Drought | 2012 | Drought → crop failure → grain price surge → food inflation |
-| Oil Price War | 2020 | OPEC+ collapse → negative oil prices → energy sector restructuring |
+From *Symptom → Pharma Supply Chain* to *Tech Paradigm → Pick-and-Shovel Play* to *Geopolitical Conflict → Safe Haven Assets* — covering the most common butterfly-effect transmission paths in financial markets.
+
+### 15 Historical Precedents
+
+| Case | Year | The Butterfly Effect |
+|------|------|---------------------|
+| COVID-19 | 2020 | Virus → lockdown → remote work revolution → tech mega-rally |
+| Texas Deep Freeze | 2021 | Polar vortex → grid collapse → nat gas 400% spike |
+| Hurricane Katrina | 2005 | Cat 5 → refinery shutdown → gasoline crisis |
+| Russia-Ukraine War | 2022 | Invasion → energy embargo → US LNG boom |
+| US-China Trade War | 2018 | Tariffs → supply chain rewiring → reshoring wave |
+| Fed Pivot | 2023 | Dovish signal → rate cut expectation → growth stock rally |
+| ChatGPT Launch | 2022 | AI chatbot → compute demand → NVIDIA supercycle |
+| GameStop Squeeze | 2021 | Reddit → short squeeze → market structure debate |
+| Fed Hike Cycle | 2022 | 0% → 5.25% → growth-to-value rotation |
+| Bitcoin ETF | 2024 | SEC approval → institutional inflow → crypto mainstreaming |
+| GLP-1 / Ozempic | 2023 | Weight loss drug → food/medtech repricing |
+| Suez Canal Block | 2021 | Ship stuck → shipping spike → inflation pressure |
+| SVB Collapse | 2023 | Bank run → regional contagion → TBTF premium |
+| US Drought | 2012 | Drought → crop failure → grain price surge |
+| Oil Price War | 2020 | OPEC+ collapse → negative oil → energy restructuring |
 
 ---
 
 ## Project Structure
 
 ```
-mr.if/
+predictionfromdailyevent/
 ├── src/
 │   ├── index.ts                    # MCP Server entry point
 │   └── tools/
@@ -234,7 +248,7 @@ mr.if/
 │   ├── butterfly-effect-chain.md   # Butterfly effect methodology
 │   ├── cross-domain-reasoning.md   # 10-discipline reasoning handbook
 │   ├── second-order-thinking.md    # Second-order thinking framework
-│   └── reasoning-discipline.md     # 7-Gate reasoning discipline
+│   └── reasoning-discipline.md     # Adaptive reasoning protocol
 ├── prompts/
 │   └── system-prompt.md            # Complete system prompt
 ├── package.json
@@ -246,15 +260,23 @@ mr.if/
 
 ## Design Philosophy
 
-1. **One tool, zero coordination tax.** Instead of N tools the LLM must orchestrate (and can skip), one call returns the full reasoning scaffold.
+1. **One tool, zero coordination tax.** One atomic call returns the full reasoning scaffold. The LLM can't skip steps because everything arrives at once.
 
-2. **Knowledge at inference time.** Discipline-specific quantitative anchors and common pitfalls are injected dynamically based on event type — not baked into the model's weights.
+2. **Adaptive depth, not rigid checklists.** Simple inputs get lightweight analysis. Complex multi-factor inputs get full-depth treatment. The tool decides, not a fixed protocol.
 
-3. **7-Gate anti-hallucination.** Every reasoning chain passes through 7 mandatory quality gates before any external tool call is made. Weak chains are dropped, not decorated.
+3. **Knowledge at inference time.** Discipline-specific quantitative anchors and common pitfalls are injected dynamically based on event type — the model gets expert-level domain knowledge exactly when it needs it.
 
-4. **Second-order by default.** The system always asks: *"What does the market already expect? Who are the hidden winners and losers?"* — preventing first-order-only analysis.
+4. **Anti-hallucination by design.** Every causal chain step needs a "because..." with discipline backing. Reverse-engineering (deciding the conclusion first, then building chains) is explicitly blocked. Weak chains get dropped, not decorated.
 
-5. **RIA voice, not robot voice.** Output reads like a trusted financial advisor — conversational, specific, commercially aware — not a structured data dump.
+5. **Second-order when it matters.** When the conclusion is market consensus ("cold → energy up"), the system challenges it. When the conclusion is already non-obvious, it doesn't waste time forcing contrarian angles.
+
+6. **RIA voice, not robot voice.** Output reads like a trusted financial advisor — conversational, specific, commercially aware — not a structured data dump.
+
+---
+
+## Contributing
+
+Issues and PRs welcome. If you have ideas for new chain templates, historical cases, or discipline knowledge — open an issue.
 
 ---
 

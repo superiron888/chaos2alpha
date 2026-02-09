@@ -20,16 +20,17 @@ Early prototypes used 5 separate MCP tools (`butterfly_analyze`, `causal_chain_b
 
 **Solution:** Consolidate into `mr_if_reason` — one atomic call that returns the complete reasoning scaffold. The LLM cannot skip steps because all steps are in the output.
 
-### Why 7-Gate protocol?
+### Why adaptive reasoning protocol?
 
-Even with good tool output, LLMs hallucinate causal connections. The 7-Gate protocol forces structured self-verification:
+Even with good tool output, LLMs hallucinate causal connections. The adaptive reasoning protocol forces structured self-verification that **scales to input complexity**:
 
-- Gates 1-2: Build the reasoning (event → chains)
-- Gates 3-4: Validate it (scoring + historical comparison)
-- Gates 5-6: Enrich it (confluence + second-order)
-- Gate 7: Quality gate (10-point checklist, must pass ALL)
+- **Light** (simple input): 2 chains, basic validation, exit check
+- **Medium** (2 event types): 2-3 chains, historical comparison, conditional second-order
+- **Heavy** (multi-factor): 3-4 chains, full validation, convergence analysis, second-order detection
 
-External tools are **blocked** until Gate 7 passes. This prevents the common failure mode of "search first, reason later."
+The original design used a rigid 7-Gate protocol where every input went through the same 10-point checklist. This produced templated, repetitive output. The adaptive approach lets simple inputs stay simple while giving complex inputs the depth they deserve.
+
+External tools are **blocked** until the exit check passes. This prevents the common failure mode of "search first, reason later."
 
 ### Why inject discipline knowledge dynamically?
 
