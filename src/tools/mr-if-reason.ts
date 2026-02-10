@@ -1376,7 +1376,7 @@ function getQuantAnchors(eventTypes: string[]): QuantAnchor[] {
 export function registerMrIfReason(server: McpServer): void {
   server.tool(
     "mr_if_reason",
-    `Mr.IF financial reasoning engine v4.0. Handles TWO types of input:
+    `Mr.IF financial reasoning engine v4.1. Handles TWO types of input:
 1) Daily-life events ("everyone's sick", "it's getting cold") → butterfly-effect cross-domain reasoning
 2) Financial events ("yield curve inverted", "NVDA earnings beat", "oil price crashed") → financial-transmission channel mapping (sector rotation, earnings read-through, macro repricing, contagion, FX pass-through)
 Returns: event classification, chain templates WITH pre-scores (0-100) and ticker seeds, event interaction effects, enhanced historical precedents, structured quantitative anchors, discipline knowledge, and complexity-based reasoning depth recommendation.
@@ -1565,7 +1565,7 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
         ? `- **REASONING MODE: FINANCIAL TRANSMISSION** — This is a direct financial event. The Transmission Channels below map how this event propagates through markets. For each channel, evaluate: (1) Already priced in? (2) What's the second derivative? (3) Where is consensus wrong? Reference the financial-transmission skill for methodology.`
         : `- **REASONING MODE: BUTTERFLY EFFECT** — This is a daily-life/non-financial event. Build cross-domain causal chains from the event to financial implications. Reference butterfly-effect-chain skill for methodology.`;
 
-      const output = `# Mr.IF Reasoning Engine Output v4.0
+      const output = `# Mr.IF Reasoning Engine Output v4.1
 
 ## 1. Event Classification
 - User input: "${user_input}"
@@ -1607,16 +1607,43 @@ ${secondaryKnowledge ? `\n${secondaryKnowledge}` : ""}
 
 ${recommendationSummary}
 
-## 8. Falsifiability Guide [ACTION REQUIRED]
+## 8. Logic Block Structure [ACTION REQUIRED]
+
+Your output to the user MUST be organized by **logic blocks** — one block per reasoning chain/thesis line.
+
+**FORMAT:**
+- Hook paragraph (1 para, conversational)
+- **Chain/Channel N: [mechanism label]** — heading shows the CAUSE→EFFECT path, not just the sector
+- Each block contains: the reasoning narrative + the tickers that flow from THIS chain
+- Lead with the STRONGEST chain (highest pre-score)
+- End with a consolidated ticker summary table
+
+**HEADING STYLE:**
+- For daily events: "Chain N: [label] — [trigger] → [mechanism] → [market impact]"
+  Example: "Chain 1: The energy pipeline — cold snap → inventory draw → midstream margin leverage"
+- For financial events: "Channel N: [label] — [financial trigger] → [transmission] → [asset impact]"
+  Example: "Channel 1: NIM compression — inverted curve → bank margin squeeze → financials sell-off"
+
+**WHY BLOCKS MATTER:**
+- User sees instantly which tickers belong to which thesis
+- If one chain breaks (kill condition triggered), user knows exactly WHICH tickers to exit
+- Makes the analysis modular and actionable, not a wall of text
+
+**DO NOT:**
+- Use generic headings like "Energy stocks" or "The opportunity"
+- Put all tickers in a single narrative paragraph
+- Have more than 4 blocks (if you have more chains, merge the weakest)
+
+## 9. Falsifiability Guide [ACTION REQUIRED]
 For each chain you build, you MUST define:
 
-**A. Kill Condition** — What specific, measurable threshold would INVALIDATE this thesis?
+**A. Kill Condition** — What specific, measurable threshold would INVALIDATE each chain/block?
 - Be precise: not "if data is bad" but "if EIA draw < 80 Bcf" or "if CPI MoM > 0.4%"
 - Every recommended ticker needs a kill condition in your output
-- This is what separates professional analysis from opinion
+- Map kill conditions to the specific logic block: "If [kill condition], exit Chain 1 tickers (ET, UNG) but Chain 2 (NFLX) may still hold"
 
 **B. Chain Break Point** — Which single step in the chain is MOST LIKELY to fail?
-- Identify the weakest link in each chain (the step with least empirical support)
+- Identify the weakest link in each logic block (the step with least empirical support)
 - Mention it naturally in your narrative: "The riskiest assumption here is..."
 
 **C. Timestamped Checkpoints** — When can the user VERIFY this thesis?
@@ -1625,7 +1652,7 @@ For each chain you build, you MUST define:
 - If the date is uncertain, give a range: "expected week of Mar 10"
 
 **D. Ticker Depth** — Dig one layer deeper than the obvious names
-- For each sector identified, include at least ONE non-obvious / mid-cap / niche play
+- For each logic block, include at least ONE non-obvious / mid-cap / niche play
 - The consensus large-cap is the starting point, not the ending point
 - Think: "If LMT is the obvious defense name, who is the BWXT/KTOS of this thesis?"
 

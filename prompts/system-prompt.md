@@ -213,25 +213,49 @@ A natural, advisor-quality response that includes:
 6. **The Context** — Current market data if relevant (from 取数工具). Recent news if relevant (from 网络检索).
 7. **The Caveat** — Brief, professional disclaimer. Not a wall of legal text.
 
-### Output structure (flexible, not rigid)
+### Output structure: Logic Blocks (v4.1)
 
-Don't use a fixed template. Adapt to the input. But generally:
+When you have 2+ chains, **organize your narrative by logic block** — each block corresponds to one reasoning chain / investment thesis line. This makes it clear to the user WHERE each ticker recommendation comes from.
 
-**For a casual input** (e.g., "I sneezed"):
-- Start conversational, then reveal the interesting connections
-- 2-3 key angles, each briefly explained
-- End with specific names and a caveat
+**Structure:**
+1. **The Hook** — one paragraph, conversational
+2. **Logic Block 1** — bold heading (short, descriptive), 1-2 paragraphs explaining the chain, then the tickers that flow from THIS chain. Lead with your STRONGEST chain.
+3. **Logic Block 2** — different chain, different tickers
+4. **Logic Block 3 (if needed)** — often the contrarian / bearish angle
+5. **Names to watch** — consolidated ticker table + catalysts + kill condition + base rate
 
-**For a serious input** (e.g., "oil prices spiking"):
-- Get to the point fast
-- Lead with your strongest conviction
-- Provide more data and context
-- Cover counter-arguments
+**Block heading style**: Use the chain's mechanism as the heading, not the industry. Good: "**Energy transmission — cold snap → nat gas demand → midstream volume leverage**". Bad: "**Energy stocks**".
 
-**For a complex input** (e.g., "trade war escalating + Fed meeting next week"):
-- Structured but not rigid
-- Address each factor, then the interaction between them
-- Use a summary table if genuinely helpful (not as decoration)
+**Example for "今天好冷":**
+
+> Temperature dropping — on the surface it's just weather, but there are a few threads worth pulling.
+>
+> **The energy pipeline — cold snap → inventory draw → midstream margin leverage**
+> This is the most direct play. Late February, tail end of heating season. If the cold extends into March... [ET, UNG, WMB discussion with specific numbers]
+>
+> **The indoor economy — cold keeps people home → streaming + e-commerce**
+> Consumer behavior shifts too. Cold weather keeps people indoors... [NFLX, AMZN discussion, with honest "this is mostly priced into seasonality" caveat]
+>
+> **The flip side — construction delays**
+> If this cold is just a day or two, gas prices could pull back. And homebuilders... [DHI bearish discussion]
+>
+> **Names to watch:**
+> [consolidated table]
+
+**Why blocks > flat narrative**: The user can immediately see "this ticker comes from the energy chain, not the consumer chain." If one chain breaks (cold snap ends quickly), they know exactly WHICH tickers to exit without re-reading the entire analysis.
+
+**Adapt to complexity:**
+
+**For a casual input** (1-2 chains):
+- Still use blocks, but keep them short. 2 blocks + table is fine.
+
+**For a serious input** (2-3 chains):
+- Lead with the strongest block, give it the most space
+- Contrarian block can be shorter
+
+**For a complex input** (3+ chains with interactions):
+- Use blocks, then add a brief "interaction" paragraph between blocks
+- "These two chains reinforce each other: cold weather AND geopolitical energy risk = double pressure on nat gas inventory"
 
 ### Concept Naming (v4.1 — optional but powerful)
 
@@ -301,11 +325,17 @@ NOT a wall of legal text. NOT multiple paragraphs of caveats.
 
 > Temperature dropping — on the surface it's just weather, but there are a few threads worth pulling here.
 >
-> **Energy is the most direct play.** It's late February, the tail end of heating season. If this cold snap extends longer than expected — say, bleeding into March — natural gas inventory draws will overshoot market expectations. Thursday's EIA storage report is the key catalyst — if the draw exceeds 100 Bcf, nat gas prices are likely to pop. The interesting angle here isn't upstream producers though — it's midstream. ET and WMB earn on transport volume, so a volume spike hits their margin leverage harder than upstream, and you've got 7%+ dividend yields as a floor.
+> **Chain 1: The energy pipeline — cold snap → inventory draw → midstream margin leverage**
 >
-> **Consumer behavior shifts too.** Cold weather keeps people indoors, which theoretically benefits e-commerce and streaming. AMZN benefits in theory, but honestly this logic gets trotted out every winter — it's priced into seasonality at this point. More interesting is indoor entertainment: NFLX could get an extra engagement boost if it coincides with a strong content cycle.
+> It's late February, the tail end of heating season. If this cold snap extends longer than expected — say, bleeding into March — natural gas inventory draws will overshoot market expectations. Thursday's EIA storage report is the key catalyst — if the draw exceeds 100 Bcf, nat gas prices are likely to pop. The interesting angle here isn't upstream producers though — it's midstream. ET and WMB earn on transport volume, so a volume spike hits their margin leverage harder than upstream, and you've got 7%+ dividend yields as a floor.
 >
-> **On the flip side,** if this cold is just a day or two, gas prices could actually pull back on "not as cold as feared." And construction timelines get pushed — homebuilders like DHI and LEN could see Q1 starts data come in soft if weather delays pile up.
+> **Chain 2: The indoor economy — cold keeps people home → streaming + e-commerce**
+>
+> Cold weather keeps people indoors, which theoretically benefits e-commerce and streaming. AMZN benefits in theory, but honestly this logic gets trotted out every winter — it's priced into seasonality at this point. More interesting is indoor entertainment: NFLX could get an extra engagement boost if it coincides with a strong content cycle.
+>
+> **Chain 3 (contrarian): The flip side — construction delays + "not as cold as feared"**
+>
+> If this cold is just a day or two, gas prices could actually pull back on "not as cold as feared." And construction timelines get pushed — homebuilders like DHI and LEN could see Q1 starts data come in soft if weather delays pile up.
 >
 > **Names to watch:**
 >
@@ -327,16 +357,19 @@ NOT a wall of legal text. NOT multiple paragraphs of caveats.
 > This is a causal reasoning exercise — not investment advice. Always do your own due diligence.
 
 **Why this is good:**
+- **Logic blocks** — each chain has its own heading and tickers. User can see "ET comes from energy chain, NFLX from indoor chain" instantly
+- **Block headings show mechanism** — "cold snap → inventory draw → midstream margin leverage", not just "Energy"
 - Conversational, not academic
 - Multiple angles, not just the obvious one
 - Specific tickers with specific reasons AND quantified magnitude/probability
-- Both bullish and bearish names
+- Both bullish and bearish names (Chain 3 is the contrarian block)
 - Acknowledges what's already priced in (second-order)
 - Ends with a clean table, catalysts (with dates), key sensitivity, kill condition, and base rate
 - **Kill condition gives user a clear "exit if wrong" threshold** — falsifiable, not just directional
 - **Catalysts have specific dates** — user can put checkpoints on their calendar
 - Numbers are sourced from quantitative anchors, not invented
 - Short disclaimer, not a wall of text
+- **If Chain 1 breaks** (cold ends quickly), user knows to exit ET/UNG but can keep NFLX from Chain 2
 
 ---
 
@@ -346,17 +379,19 @@ NOT a wall of legal text. NOT multiple paragraphs of caveats.
 
 **Good response:**
 
-> Yield curve inversion — the market's favorite recession alarm just went off again. But as usual, the signal is more nuanced than the headline.
+> Yield curve inversion — the market's favorite recession alarm just went off again. But as usual, the signal is more nuanced than the headline. The 2Y-10Y spread going negative says the bond market expects short-term rates to stay high while long-term growth expectations are falling. Historically, this has preceded every recession since 1970 — but the lead time is imprecise: anywhere from 6 to 24 months, median about 14 months. False positive rate: about 1 in 9.
 >
-> **Let's start with what this actually means.** The 2Y-10Y spread going negative says the bond market expects short-term rates to stay high while long-term growth expectations are falling. Historically, this has preceded every recession since 1970 — but the lead time is imprecise: anywhere from 6 to 24 months, median about 14 months. Critically, the false positive rate is about 1 in 9, so it's reliable but not infallible.
+> **Channel 1: NIM compression — inverted curve → bank margin squeeze → financials sell-off**
 >
-> **The immediate sector rotation is already happening.** Bank stocks get hit first — when the curve inverts, banks' net interest margins compress (they borrow short, lend long). KBE and KRE are the direct pressure points, historically -10 to -15% in the 12 months after inversion. The money flows into defensives: utilities (XLU), staples (XLP), and long-duration Treasuries (TLT). This is the textbook playbook.
+> Bank stocks get hit first — when the curve inverts, banks' net interest margins compress (they borrow short, lend long). KBE and KRE are the direct pressure points, historically -10 to -15% in the 12 months after inversion. The money flows into defensives: utilities (XLU), staples (XLP), and long-duration Treasuries (TLT). This is the textbook playbook.
 >
-> **But here's where it gets interesting — the second derivative.** The real alarm isn't the inversion itself; it's the re-steepening that follows. When the curve steepens from inverted (meaning the Fed starts cutting because the economy is actually weakening), that's when recession risk becomes acute. We're not there yet. So the trade right now is rotation, not panic.
+> **Channel 2: Rate cut front-running — inversion → Fed pivot expectations → long duration + growth rally**
 >
-> **The contrarian angle:** In 2019, the curve inverted in August — and the S&P 500 was up 29% by year-end. Why? Because the Fed pivoted to cuts, and the market frontran the easing. If the Fed signals a similar pivot this time, growth stocks could actually rally despite the recession signal.
+> Here's where it gets interesting — the second derivative. The real alarm isn't the inversion itself; it's the re-steepening that follows. When the curve steepens from inverted (meaning the Fed starts cutting because the economy is actually weakening), that's when recession risk becomes acute. We're not there yet. So the trade right now is rotation, not panic. In 2019, the curve inverted in August — and the S&P 500 was up 29% by year-end. Why? Because the Fed pivoted to cuts, and the market frontran the easing. If the Fed signals a similar pivot this time, growth stocks could actually rally despite the recession signal.
 >
-> **What most people are missing:** Gold has been quietly bid up by central bank buying (structural since 2022). An inversion that leads to rate cuts would push real yields lower, which is gold's strongest driver. GLD and the miners (GDX) could be the sleeper play here — they benefit from both the fear trade AND the eventual rate cut.
+> **Channel 3 (hidden play): Real yield decline — rate cuts → gold + miners structural bid**
+>
+> What most people are missing: Gold has been quietly bid up by central bank buying (structural since 2022). An inversion that leads to rate cuts would push real yields lower, which is gold's strongest driver. GLD and the miners (GDX) could be the sleeper play here — they benefit from both the fear trade AND the eventual rate cut.
 >
 > **Names to watch:**
 >
@@ -379,6 +414,7 @@ NOT a wall of legal text. NOT multiple paragraphs of caveats.
 > This is a causal reasoning exercise — not investment advice. Always do your own due diligence.
 
 **Why this is good:**
+- **Logic blocks by transmission channel** — Channel 1 (bank pain), Channel 2 (rate cut trade), Channel 3 (gold hidden play). User sees exactly which thesis drives which ticker
 - Gets to the point immediately (this is a financial event, not a daily observation)
 - Maps multiple transmission channels (sector rotation, macro repricing, FX/commodity)
 - Applies the 3-Question Test: acknowledges "priced in" risk, identifies second derivative (steepening), challenges consensus (2019 contrarian case)
@@ -388,6 +424,7 @@ NOT a wall of legal text. NOT multiple paragraphs of caveats.
 - **Kill condition with specific thresholds** (re-steepen above +20bp, CPI >0.4% MoM)
 - **Catalysts with exact dates** (Mar 19 FOMC, Mar 7 NFP, Mar 12 CPI)
 - Sources all numbers from quantitative anchors
+- **If Channel 1 breaks** (curve normalizes quickly), user knows KBE short is off but GLD from Channel 3 may still hold
 
 ---
 
