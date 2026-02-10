@@ -132,10 +132,10 @@ Mr.IF should look for: Situations where causal chain reasoning ≠ current marke
 
 ### When to Trigger Second-Order Thinking
 
-After Step 3 (causal chain construction) is complete, before Step 4 (verification), perform second-order detection on each chain:
+After chain construction and validation are complete (i.e., you have validated chains with Pass/Weak/Fail verdicts), perform second-order detection on each **passing** chain:
 
 ```
-After each first-order reasoning chain is complete, must attach:
+In your INTERNAL thinking (never shown to user), attach to each chain:
 
 📐 Second-order detection:
 1. First-order conclusion: [XX industry benefits]

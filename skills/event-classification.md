@@ -84,7 +84,34 @@ For events that don't fit neatly:
 | Nuclear/arms control treaties | `geopolitical` | Defense spending + safe haven flows |
 | Media industry disruption | `social` if trend, `corporate_event` if specific company | Depends on framing |
 
-### Step 4: Extract entities (in your thinking, not passed to tool)
+### Step 4: Determine if verification is needed (needs_verification)
+
+After classifying, decide whether the input contains **specific factual claims** that must
+be verified before analysis. This is critical — Mr.IF must never analyze fabricated events.
+
+**Set `needs_verification = TRUE` when ANY of these are present:**
+
+| Signal | Examples | Why |
+|--------|----------|-----|
+| **Specific date** | "2月6日", "本周", "昨天", "today" | Timestamped claims are verifiable |
+| **Specific numbers** | "裁员300人", "32人死亡", "三分之二席位" | Quantified claims need confirmation |
+| **Named entity + action** | "华盛顿邮报裁员", "高市早苗当选", "Musk arrested" | A specific actor did a specific thing |
+| **Rumor markers** | "听说", "据报道", "有人说", "传闻", "allegedly", "rumor" | Explicit hearsay needs checking |
+| **Breaking news framing** | "刚刚", "突发", "breaking", "just happened" | Urgency signals unverified info |
+
+**Set `needs_verification = FALSE` when:**
+
+| Signal | Examples | Why |
+|--------|----------|-----|
+| **General observation** | "大家都感冒了", "最近AI很火", "堵车好严重" | Not a specific verifiable claim |
+| **Hypothetical** | "如果明天下雨", "要是降息了" | Scenario, not factual assertion |
+| **Established fact** | "美债收益率倒挂了" (user checking market state) | Can be confirmed via data tools later |
+| **Personal experience** | "我打了个喷嚏", "今天好冷" | Subjective, no verification needed |
+
+**When in doubt:** Default to `TRUE`. It's better to verify unnecessarily than to analyze
+a fabricated event.
+
+### Step 5: Extract entities (in your thinking, not passed to tool)
 
 While classifying, identify:
 - **Sectors**: Which industries are directly impacted?
@@ -124,15 +151,32 @@ These inform your reasoning AFTER getting the tool output.
 
 ```
 1. Read the user's input
-2. Determine event_type using the logic above
-3. Call mr_if_reason with:
-   - user_input: the raw input
-   - event_type: your classified type (e.g., "geopolitical")
-   - current_date: today's date (optional)
+2. Determine event_type using the logic above (Steps 1-3)
+3. Determine needs_verification using Step 4
+4. IF needs_verification = TRUE:
+     → Use 网络检索工具 to search for the event (search the core claim)
+     → Assess verification result:
+       a) CONFIRMED — credible sources confirm the event and key details match
+       b) PARTIAL — event is real but details are wrong (correct them before proceeding)
+       c) UNCONFIRMED / FALSE — no credible sources found, or sources contradict the claim
+     → IF CONFIRMED or PARTIAL: proceed to step 5 (use corrected facts if partial)
+     → IF UNCONFIRMED or FALSE: STOP. Do NOT call mr_if_reason.
+       Respond: "我没有找到可靠来源确认这条消息，无法基于未经验证的信息做投资分析。建议先确认消息真实性后再来。"
+       (Mirror user's language. If English: "I couldn't find credible sources confirming this event. I can't analyze unverified information for investment purposes. Please verify the news first.")
+5. Call mr_if_reason with:
+     - user_input: the raw input (corrected if PARTIAL)
+     - event_type: your classified type (e.g., "geopolitical")
+     - current_date: today's date (optional)
 ```
 
-**When UNSURE:** If you genuinely can't determine the type (extremely vague input), omit
-`event_type` and let the tool's internal keyword classifier handle it.
+**PARTIAL handling example:**
+User says "日本选举高市赢了，拿下四分之三席位"
+Search shows: election happened, but it was two-thirds (not three-quarters).
+→ Correct in your response: "事件确认，细节有出入。高市确实赢得选举，但自民党拿下的是三分之二席位，不是四分之三。"
+→ Proceed with analysis based on corrected fact (two-thirds).
+
+**When UNSURE about event_type:** If you genuinely can't determine the type (extremely vague
+input), omit `event_type` and let the tool's internal keyword classifier handle it.
 
 **Rule of thumb:** If you can explain in one sentence WHY the input maps to a type, provide it.
 If you're guessing, don't.

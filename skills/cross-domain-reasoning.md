@@ -486,79 +486,25 @@ Inventory reduction → Demand>Shipments (hidden demand) → Inventory replenish
 
 **How Do Events Finally Become Stock Price Changes?**
 
-This is the final step of all reasoning chains, and the most easily overlooked: You've deduced "healthcare industry benefits," but how exactly does the stock price move?
+This is the final step of all reasoning chains. For detailed transmission channel mapping (EPS revision, PE multiple change, capital flow, contagion, FX pass-through), refer to **financial-transmission.md**. For "priced in?" detection, refer to **second-order-thinking.md** Tool 2.
 
-**Transmission Path 1: EPS Expectation Revision**
-```
-Event → Affects revenue/costs → Analysts revise EPS expectations → Stock price change
-Time: 1-4 weeks (before next earnings season)
-Magnitude: EPS revision +1% → Stock price typically rises >1% (due to PE multiple)
-Example: Hurricane→Insurance claims↑ → ALL/TRV EPS revised down → Stock price↓
-Key: Compare Street consensus EPS vs your reasoning conclusion difference
-```
-
-**Transmission Path 2: Valuation Multiple (PE/PS) Changes**
-```
-Event → Changes growth expectations/Risk appetite → PE multiple expansion or contraction → Stock price change
-Time: May be immediate (emotion-driven), or months
-Magnitude: PE from 20x to 25x = Stock price +25% (even if EPS unchanged)
-Example: ChatGPT launch→AI growth expectations surge → NVDA PE expanded from 40x to 60x
-Key: Narrative changes drive PE faster than number changes
-```
-
-**Transmission Path 3: Capital Flow/Allocation Shift**
-```
-Event → Investors reallocate assets → Sector rotation → Capital inflow/outflow
-Time: Immediate to weeks
-Magnitude: Large institution reallocation can drive sectors 5-10%
-Example: Fed turns dovish → Bond capital flows to growth stocks → QQQ↑
-Key: Watch ETF flow data (Bloomberg), 13F filings (institutional holdings)
-```
-
-**Transmission Path 4: Options/Derivatives Gamma Effect**
-```
-Event → Massive call/put buying → Market Maker hedging → Amplifies stock price movement
-Time: Immediate
-Magnitude: Gamma squeeze can cause surge/collapse detached from fundamentals
-Example: GME short squeeze, 0DTE options amplify SPX volatility
-Key: Watch options flow, put/call ratio, dealer gamma exposure
-```
-
-**"Is It Already Priced In?" Nuclear Check**
-```
-When each reasoning chain reaches financial conclusion, must ask:
-
-1. Is this information public or my unique reasoning?
-   → Public information usually already priced in → Need to find edge
-   
-2. What expectations does current stock price imply?
-   → Compare implied growth vs your reasoned growth
-   
-3. What is market participants' consensus?
-   → If your reasoning = consensus → No alpha
-   → If your reasoning ≠ consensus → Has alpha but also risk
-   
-4. What can change consensus?
-   → Catalysts: Earnings, FDA approval, FOMC, elections, weather data...
-```
-
-**Bridging Rules: Market Mechanisms**
+**Bridging Rules (unique to cross-domain reasoning):**
 - Fundamental changes → First see which transmission path is fastest
 - Fastest path usually: Emotion/narrative → PE change (can complete in one day)
 - Slowest path usually: Actual performance → EPS revision (requires 1-2 quarters)
 - **Core principle: Market prices expectations, not facts. What you need to reason is not "what will happen," but "what hasn't been expected yet"**
 
-**Quantitative Anchors:**
-- S&P 500 average Forward PE: ~18-20x is neutral, > 22x = Expensive, < 16x = Cheap
-- EPS revision +1% → Theoretical stock price change = 1% × PE multiple (when PE=20, EPS revision +5% → Stock price may +10%+)
-- Narrative change→PE expansion/contraction speed: After new narrative forms, PE can expand 20-30% within 1-3 months (e.g., AI narrative pushed NVDA)
-- Institutional reallocation cycle: Large mutual funds/pensions reallocate at quarter-end → Abnormal capital flows 2 weeks before quarter-end
-- Earnings reaction: Beat consensus but guide down → Usually falls; Miss but guide up → Usually rises (expectation direction more important than absolute value)
+**Quick Reference Anchors:**
+- S&P 500 Forward PE: ~18-20x neutral, >22x expensive, <16x cheap
+- EPS revision +1% → Stock price change ≈ 1% × PE multiple
+- Narrative shift → PE can expand 20-30% in 1-3 months
+- Institutional reallocation: abnormal flows 2 weeks before quarter-end
+- Beat + guide down → usually falls; Miss + guide up → usually rises
 
 **Common Mistakes:**
-- Equating "positive event" with "stock price rise": Good news exhaustion is most common sell signal (buy the rumor, sell the news)
-- Ignoring positioning and holding structure: If everyone is already long a ticker, even if fundamentals good, upside limited (crowded trade)
-- Using trailing PE for judgment: Should use forward PE (based on expected earnings), trailing PE reflects past, not future
+- Good news exhaustion is most common sell signal (buy the rumor, sell the news)
+- Crowded trade: if everyone is already long, upside limited even with good fundamentals
+- Use forward PE (expected earnings), not trailing PE
 
 ---
 
@@ -631,13 +577,7 @@ One hurricane → Several insurers' Q3 performance impact → Reasonable
 ```
 
 ### Validation 6: Price In Detection (Most Important Final Check)
-```
-Does the market know this reasoning chain's conclusion?
-→ If public information (e.g., weather forecast) → Likely already priced in → confidence -1
-→ If your unique cross-disciplinary reasoning → May be true edge → confidence unchanged
-→ Key: Check if options implied volatility/futures curve already reflects
-→ Judgment standard: If your reasoning conclusion can be easily found searching Bloomberg/CNBC → Already priced in
-```
+Refer to **second-order-thinking.md** Tool 2 for the full "Is It Already Priced In?" checklist. Quick rule: if your conclusion can be easily found on Bloomberg/CNBC → already priced in → confidence -1.
 
 ---
 

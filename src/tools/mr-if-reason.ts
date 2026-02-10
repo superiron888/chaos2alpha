@@ -1,5 +1,5 @@
 /**
- * Mr.IF Butterfly-Effect Reasoning Engine — Core Tool v4.1
+ * Mr.IF Butterfly-Effect Reasoning Engine — Core Tool v4.3
  *
  * One call returns the complete reasoning scaffold:
  * 1. Event classification + reasoning directions (v4: LLM-classified event_type override)
@@ -8,16 +8,18 @@
  * 4. Historical precedent search (enhanced: recency + seasonal + magnitude)
  * 5. Structured quantitative anchors
  * 6. Discipline knowledge injection
- * 7. Logic Block structure guidance (v4.1)
- * 8. Falsifiability guide: kill conditions, chain break points, timestamped checkpoints (v4.1)
+ * 7. Inverted Pyramid output structure (v4.2: Bottom Line + Top Picks first, data layer second)
+ * 8. Falsifiability guide: kill conditions, chain break points, timestamped checkpoints
  *
- * v3 → v4.1 changelog:
+ * v3 → v4.2 changelog:
  * - v3: Chain confidence pre-score, sector hints, ticker seeds, interaction matrix,
  *        enhanced historical matching, structured quantitative anchors, magnitude + probability
  * - v3.1: Financial-to-financial transmission channels, output format bifurcation
  * - v3.2: Novel event detection + domain knowledge search (first-principles mode)
  * - v4.0: LLM-guided event classification (event_type parameter overrides keyword matching)
  * - v4.1: Logic block output structure, kill conditions, concept naming, deeper tickers
+ * - v4.2: Inverted pyramid (Bottom Line + Top Picks first), two-layer structure (narrative/data), short focus explicit
+ * - v4.3: Net-net closing sentence, 📊 Reference Data visual separator, factual verification (Step 0.5 in prompt), prompt slimming
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -1378,7 +1380,7 @@ function getQuantAnchors(eventTypes: string[]): QuantAnchor[] {
 export function registerMrIfReason(server: McpServer): void {
   server.tool(
     "mr_if_reason",
-    `Mr.IF financial reasoning engine v4.1. Handles TWO types of input:
+    `Mr.IF financial reasoning engine v4.2. Handles TWO types of input:
 1) Daily-life events ("everyone's sick", "it's getting cold") → butterfly-effect cross-domain reasoning
 2) Financial events ("yield curve inverted", "NVDA earnings beat", "oil price crashed") → financial-transmission channel mapping (sector rotation, earnings read-through, macro repricing, contagion, FX pass-through)
 Returns: event classification, chain templates WITH pre-scores (0-100) and ticker seeds, event interaction effects, enhanced historical precedents, structured quantitative anchors, discipline knowledge, and complexity-based reasoning depth recommendation.
@@ -1567,7 +1569,7 @@ This is Mr.IF's core reasoning tool — MUST be called FIRST before all other to
         ? `- **REASONING MODE: FINANCIAL TRANSMISSION** — This is a direct financial event. The Transmission Channels below map how this event propagates through markets. For each channel, evaluate: (1) Already priced in? (2) What's the second derivative? (3) Where is consensus wrong? Reference the financial-transmission skill for methodology.`
         : `- **REASONING MODE: BUTTERFLY EFFECT** — This is a daily-life/non-financial event. Build cross-domain causal chains from the event to financial implications. Reference butterfly-effect-chain skill for methodology.`;
 
-      const output = `# Mr.IF Reasoning Engine Output v4.1
+      const output = `# Mr.IF Reasoning Engine Output v4.3
 
 ## 1. Event Classification
 - User input: "${user_input}"
@@ -1609,32 +1611,57 @@ ${secondaryKnowledge ? `\n${secondaryKnowledge}` : ""}
 
 ${recommendationSummary}
 
-## 8. Logic Block Structure [ACTION REQUIRED]
+## 8. Output Structure — Inverted Pyramid + Logic Blocks (v4.3) [ACTION REQUIRED]
 
-Your output to the user MUST be organized by **logic blocks** — one block per reasoning chain/thesis line.
+Your output MUST follow a TWO-LAYER structure — **narrative first, data second** — so three types of users each get value:
 
-**FORMAT:**
-- Hook paragraph (1 para, conversational)
-- **Chain/Channel N: [mechanism label]** — heading shows the CAUSE→EFFECT path, not just the sector
-- Each block contains: the reasoning narrative + the tickers that flow from THIS chain
-- Lead with the STRONGEST chain (highest pre-score)
-- End with a consolidated ticker summary table
+### LAYER 1: THE RIA SPEAKS (top of output — the first thing the user reads)
 
-**HEADING STYLE:**
-- For daily events: "Chain N: [label] — [trigger] → [mechanism] → [market impact]"
-  Example: "Chain 1: The energy pipeline — cold snap → inventory draw → midstream margin leverage"
-- For financial events: "Channel N: [label] — [financial trigger] → [transmission] → [asset impact]"
-  Example: "Channel 1: NIM compression — inverted curve → bank margin squeeze → financials sell-off"
+**A. Bottom Line (1-2 sentences, FIRST LINE of your response)**
+Open with your verdict. Answer: "Is this event tradeable? What's the highest-conviction play? If not tradeable, say so."
+- Strong event: "Japan's super-majority election is a structural shift — defense procurement (LMT) and semiconductor equipment (LRCX) are the two clearest plays, with GD as the non-consensus deeper pick."
+- Weak event: "Honestly, Sudan's conflict has near-zero transmission to US equities. If you must have exposure, GLD as a broad uncertainty hedge is the only marginally defensible play."
 
-**WHY BLOCKS MATTER:**
-- User sees instantly which tickers belong to which thesis
-- If one chain breaks (kill condition triggered), user knows exactly WHICH tickers to exit
-- Makes the analysis modular and actionable, not a wall of text
+**B. Top Picks + Short Focus (immediately after Bottom Line)**
+One line: "**Top picks:** LMT > LRCX > GD **| Short focus:** AAPL (yen weakness + Japan-China friction)"
+- Rank by conviction (Probability × Magnitude). Max 3 bullish + 1-2 bearish.
+- If no meaningful bearish thesis, omit Short Focus — don't force it.
 
-**DO NOT:**
-- Use generic headings like "Energy stocks" or "The opportunity"
-- Put all tickers in a single narrative paragraph
-- Have more than 4 blocks (if you have more chains, merge the weakest)
+**C. Logic Block Narratives (the "why" — told conversationally)**
+- **Chain/Channel N: [mechanism heading]** — each block tells the story of ONE reasoning chain
+- Use your RIA voice: confident, specific, honest about weak links
+- Each block names the tickers that flow from THAT chain — but does NOT include the full quantitative table (that's Layer 2)
+- Weave in at least one dated historical case per key block (e.g., "In Feb 2021, UNG surged ~120%…") — this anchors credibility
+- Lead with the STRONGEST chain. End with the contrarian/bearish block.
+
+**--- 📊 Reference Data** (visual separator — signals "narrative ends, data begins")
+
+### LAYER 2: THE DATA SPEAKS (bottom of output — the reference section)
+
+After all narrative blocks, present the structured data:
+- **Names to watch** — consolidated ticker summary table (Ticker | Why | Direction | Magnitude | Probability | Time | Key Variable). Source numbers: cite anchors. If uncertain, flag "needs confirmation via data tool".
+- **Key Catalysts** — with specific dates (not "EIA report" but "EIA nat gas storage (Thu Feb 13, 10:30 ET)")
+- **Key Sensitivity** — the single variable this thesis hinges on
+- **Kill Condition** — specific, falsifiable thresholds, mapped to logic blocks
+- **Base Rate** — concrete historical precedent with year, numbers, and tickers (e.g., "Post-inversion 12mo avg: Financials -15%, Utilities +10%"). Include 1-3 specific dated cases.
+- **Net-net** — ONE closing sentence: highest conviction + non-consensus play + key trigger + walk-away condition. Closes the loop opened by the Bottom Line.
+- **Disclaimer** — 1-2 sentences
+
+### WHY THIS STRUCTURE:
+- **3-second reader** (casual): reads Bottom Line + Top Picks → knows if it matters and what to look at
+- **1-minute reader** (engaged): reads Layer 1 narrative → understands the reasoning
+- **3-minute reader** (professional): reads full output including Layer 2 → can execute and track
+
+### HEADING STYLE (unchanged):
+- Daily events: "**Chain N: [label] — [trigger] → [mechanism] → [market impact]**"
+- Financial events: "**Channel N: [label] — [financial trigger] → [transmission] → [asset impact]**"
+
+### DO NOT:
+- Bury the conclusion at the bottom — Bottom Line comes FIRST
+- Put quantitative tables inside narrative blocks — tables go in Layer 2
+- Use generic headings like "Energy stocks" — show the mechanism
+- Have more than 4 blocks. If a genuinely important dimension didn't reach main-chain conviction, add a one-line "**Also on radar:**" before 📊 — focus on WHY it matters. Omit if nothing is worth it; never pad with weak angles.
+- Force Short Focus when there's no meaningful bearish thesis
 
 ## 9. Falsifiability Guide [ACTION REQUIRED]
 For each chain you build, you MUST define:

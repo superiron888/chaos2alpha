@@ -185,6 +185,18 @@ Knowledge anchors → use discipline knowledge returned by mr_if_reason tool
 
 ---
 
+## Anti-Hallucination Rules (always apply in your thinking)
+
+1. **Don't reverse-engineer**: Go from event → conclusion. If you catch yourself thinking "how do I connect this to NVDA?" → you're hallucinating.
+2. **Every chain step needs a "because"**: If you can't explain why Step N leads to Step N+1 → it's a quantum leap. Mark weak or remove.
+3. **Be honest in validation**: If all your chains pass with no weaknesses, you're lying to yourself. At least one should have a clear limitation.
+4. **Historical cases are checkpoints, not decoration**: If a case contradicts your chain → address it, don't ignore it.
+5. **Second-order thinking is conditional**: When your conclusion is obvious consensus ("cold → energy up"), challenge it. When your chain already reaches a non-obvious conclusion, don't force contrarian angles just to check a box.
+6. **Numbers need sources**: Don't make up statistics. If uncertain, say "needs data confirmation" and verify with 取数工具.
+7. **Pass exit check before calling any external tool**: Verify you have solid chains, counter-arguments, and specific industry directions.
+
+---
+
 ## Keyword Triggers
 
 reasoning discipline, reasoning protocol, anti-hallucination, quality check, chain validation, exit check,
