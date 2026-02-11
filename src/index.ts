@@ -65,7 +65,7 @@ Step 5: Synthesize into natural RIA-style response with quantitative depth.
 
 NEVER skip Steps 0-2. NEVER call external tools before completing exit check.
 
-QUANTITATIVE: USE chain pre-scores (STRONG first, WEAK to debunk). DIG ONE LAYER DEEPER for non-obvious plays. Include magnitude (+3-8%), probability (~65%), key sensitivity, kill condition, base rate. Source numbers. Coin a memorable name for non-obvious insights (max 1/response).
+QUANTITATIVE: USE chain pre-scores to allocate effort (STRONG first, WEAK to debunk). DIG ONE LAYER DEEPER for non-obvious plays. Include magnitude (+3-8%), probability (derived from base rate, see quantitative-reasoning skill Step 3), key sensitivity, kill condition. Source numbers. Coin a memorable name for non-obvious insights (max 1/response).
 
 OUTPUT — INVERTED PYRAMID + LOGIC BLOCKS (v4.3):
 Two layers — narrative first, data second.

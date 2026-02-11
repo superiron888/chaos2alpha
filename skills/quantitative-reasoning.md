@@ -70,25 +70,68 @@ $2B across industry, QDEL gets ~15% share = ~$300M
 
 ---
 
-## Step 3: Probability Estimation
+## Step 3: Probability Derivation (Base-Rate-Anchored)
 
-For each chain/recommendation, estimate probability of thesis playing out:
+For each chain/recommendation, **derive** probability from historical base rates — not from chain scores alone.
 
-### Calibration Guide
+### 3a. Start with the Base Rate Prior
 
-| Probability | What it means | When to use |
-|------------|---------------|-------------|
-| ~80%+ | Near-certain, multiple data points confirm | Only for chains with data tool confirmation + historical precedent + seasonal alignment |
-| ~60-75% | More likely than not, good evidence | Chain is STRONG (score 65+), seasonal alignment, 1+ anchor supports |
-| ~45-55% | Coin flip, plausible but uncertain | Chain is MODERATE (score 45-64), some evidence but weak links exist |
-| ~30-40% | Speculative, worth watching | Chain is WEAK (score <45), or relies on single unconfirmed assumption |
-| <30% | Long shot | Don't recommend with conviction. Mention as "outside chance" at most |
+Find the closest match from Step 5's base rate library or tool output:
+- Severe flu season → healthcare alpha appears ~60% of the time → **Prior ≈ 60%**
+- Cold snap (HDD >10%) → nat gas spikes ~70% of winters → **Prior ≈ 70%**
+- Geopolitical shock → VIX spike reverts within 4 weeks ~65% of the time → **Prior for safe-haven ≈ 65%**
+
+If no base rate exists: start at **50%** (maximum uncertainty) and state so.
+
+### 3b. Adjust for Current Signal Strength (±5–15%)
+
+How strong is today's evidence vs. the historical average case?
+- Strong confirming data (CDC ILI at 4.2%, well above 3.5% threshold): **+10%**
+- Weak / early-stage signal (scattered reports, no hard data): **−5 to −10%**
+- Multiple independent confirmations (CDC + pharmacy sales + Google Trends): **+10–15%**
+
+### 3c. Adjust for Transmission Reliability (−5% per weak link)
+
+Each intermediary assumption in the chain reduces reliability:
+- Direct (event → stock impact): **no discount**
+- 1 intermediary assumption: **−5%**
+- 2 intermediary assumptions: **−10%**
+- Novel / untested transmission path: **−15%**
+
+### 3d. Adjust for Consensus / Priced-In (−5 to −20%)
+
+- Non-consensus / under-the-radar: **no discount**
+- Partially priced in: **−5 to −10%**
+- Already consensus (widely covered): **−15 to −20%**
+
+### Derivation Example:
+```
+Base Rate Prior: severe flu → healthcare alpha ~60% of the time
+Signal Strength: CDC ILI 4.2% (above threshold) + Google Trends elevated → +10%
+Transmission: flu → testing demand → QDEL (1 intermediary) → −5%
+Consensus: flu season covered in media but not QDEL specifically → −5%
+━━━━━━━━━━
+Final: 60 + 10 − 5 − 5 = ~60%
+```
+
+### Output Rule:
+In the **Base Rate** section of your response, show the derivation trail in 1–2 lines:
+> "Severe flu seasons produced healthcare alpha ~60% of the time; current ILI (4.2%) is above-average (+10%), one intermediary step (−5%), partially covered (−5%) → **~60%**"
+
+### Guard Rails:
+
+| Final Probability | Conviction | Action |
+|---|---|---|
+| >75% | HIGH | Lead recommendation |
+| 55–75% | MEDIUM-HIGH | Standard recommendation with confidence |
+| 40–55% | MEDIUM | Mention with caveats |
+| <40% | LOW | "Also on radar" at most; don't recommend with conviction |
 
 ### Rules:
-- **Chain pre-score maps roughly to probability**: Score 70 ≈ ~65-70% odds. Score 50 ≈ ~50% odds. Score 35 ≈ ~35% odds.
-- **Adjust for data confirmation**: If data tool confirms a key assumption, add +10%. If data contradicts, subtract -15%.
-- **Adjust for consensus**: If your thesis is consensus (everyone sees it), effective probability of *alpha* drops even if thesis probability is high.
+- **Base Rate is the anchor** — chain pre-score is a cross-check, not the source. If they conflict, explain the gap.
 - **Never say 100% or 0%** — markets always have uncertainty.
+- **If adjustments exceed ±20% from base rate**: pause and justify — large deviations need strong evidence.
+- **If no base rate available**: state "no historical base rate; probability estimated from signal strength and chain logic alone" and use chain score as fallback.
 
 ---
 
@@ -113,9 +156,9 @@ Always include one line:
 
 ---
 
-## Step 5: Base Rate Calibration
+## Step 5: Base Rate Calibration (Feeds into Step 3 Probability)
 
-Before finalizing, ask: "How often does this type of event actually move stocks?"
+Before finalizing, ask: "How often does this type of event actually move stocks?" The answer becomes **Step 3a's Prior**.
 
 ### Base Rate Library:
 
@@ -131,32 +174,32 @@ Before finalizing, ask: "How often does this type of event actually move stocks?
 | Earnings surprise (>10% beat) | Individual stock +5-15% on beat | Historical earnings |
 
 ### Rules:
-- **Always include one base rate statement** in your response
+- **Always include one base rate statement** in your response — this is also the **Prior for Step 3a**
 - Format: "Events like this historically [happened X often] and [moved Y by Z%]"
 - If your thesis implies a move larger than the base rate, explain why this time is different
-- If you can't find a relevant base rate, say so: "No clear historical base rate for this specific pattern"
+- If you can't find a relevant base rate, say so: "No clear historical base rate for this specific pattern" — and use 50% as Step 3a prior
 
 ---
 
 ## Integration with Chain Scores
 
-The mr_if_reason tool returns chain pre-scores. Use them as your starting point:
+The mr_if_reason tool returns chain pre-scores. Use them to **allocate effort and cross-check**, NOT as the probability source:
 
 ```
 Chain score 70 (STRONG) → Lead with this chain
   → Magnitude: Use anchor-based estimation
-  → Probability: Start at ~65-70%, adjust with data
+  → Probability: Derive from Base Rate (Step 3). Chain score 70 = cross-check; if Base Rate says ~60%, don't inflate to 70% just because the score is high.
   → Allocate most of your response to this chain
 
 Chain score 55 (MODERATE) → Supporting angle
   → Magnitude: Use historical-precedent-based estimation
-  → Probability: Start at ~50-55%, adjust with data
+  → Probability: Derive from Base Rate (Step 3). If base rate is higher than chain score suggests, explain why.
   → Brief mention, don't over-invest in narrative
 
 Chain score 35 (WEAK) → Debunk or mention briefly
   → Either explain WHY it's weak (consensus trap, low materiality)
   → Or skip entirely if you have enough STRONG/MODERATE chains
-  → If you include it, clearly flag low probability (~35%)
+  → Probability likely <40% regardless of derivation
 ```
 
 ---

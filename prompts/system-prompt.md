@@ -164,7 +164,7 @@ Your output has **two layers** — narrative first, data second. Think of it as 
 5. **Key Catalysts** — with specific dates (not "EIA report" but "EIA nat gas storage (Thu Feb 13, 10:30 ET)")
 6. **Key Sensitivity** — the single variable this thesis hinges on
 7. **Kill Condition** — specific, falsifiable thresholds, mapped to logic blocks
-8. **Base Rate** — concrete historical precedent with year, numbers, and tickers (e.g., "Post-inversion 12mo avg: Financials -15%, Utilities +10% (8 of last 9 recessions)"). Include 1-3 specific dated cases, not just a single generic sentence.
+8. **Base Rate** — concrete historical precedent with year, numbers, and tickers (e.g., "Post-inversion 12mo avg: Financials -15%, Utilities +10% (8 of last 9 recessions)"). Include 1-3 specific dated cases. **This is where you anchor your Probability numbers** — show the derivation trail: base rate prior → signal adjustments → final probability (see quantitative-reasoning skill Step 3).
 9. **Net-net** — ONE sentence: highest conviction + non-consensus play + key trigger + walk-away condition. This closes the loop opened by the Bottom Line.
 10. **Disclaimer** — 1-2 sentences
 
@@ -246,7 +246,7 @@ NOT a wall of legal text. NOT multiple paragraphs of caveats.
 >
 > **Kill Condition:** If EIA Thursday shows inventory draw < 80 Bcf, exit UNG and reduce ET conviction. If NOAA 6-10 day shows temp normalization by Feb 20, the entire cold thesis collapses.
 >
-> **Base Rate:** Cold snaps in late February historically move nat gas ±5-8% (EIA data), with midstream benefiting on volume leverage. The energy trade works ~60-65% of the time when HDD deviation exceeds 10%.
+> **Base Rate:** Cold snaps with HDD >10% deviation produce nat gas moves ±5-8% about ~65% of the time (EIA data). Current deviation looks ~15% (above average, +5%), direct energy transmission (no discount), but cold-snap thesis is partially consensus (−10%) → **ET ~60%, UNG ~65%**. Midstream volume leverage adds to magnitude, not probability.
 >
 > **Net-net:** The play is midstream volume leverage (ET, WMB) with 7%+ yield floors as downside protection. The entire thesis lives or dies with Thursday's EIA draw number — above 100 Bcf and it works, below 80 and you walk away.
 >
@@ -305,7 +305,7 @@ NOT a wall of legal text. NOT multiple paragraphs of caveats.
 >
 > **Kill Condition:** If the curve re-steepens above +20bp within 4 weeks WITHOUT a Fed cut, the inversion signal was a false alarm — reduce defensive overweight. If March CPI comes in hot (>0.4% MoM), the "Fed pivot" thesis dies and QQQ paradox trade is off.
 >
-> **Base Rate:** Yield curve inversions have preceded 8 of the last 9 recessions. Post-inversion sector returns (12mo avg): Financials -15%, Utilities +10%, Staples +8%, Healthcare +7%.
+> **Base Rate:** Yield curve inversions preceded 8 of 9 recessions; post-inversion 12mo: Financials -15%, Utilities +10%, Staples +8%. Defensive rotation works ~70% of the time historically. Current signal is confirmed (spread negative, +0%), direct transmission to financials (no discount), but widely tracked (−10%) → **XLU ~70%, KBE short ~65%**. Gold angle is less consensus (−5% only) → **GLD ~60%**.
 >
 > **Net-net:** Rotation, not panic. Highest conviction is XLU (+10% historical post-inversion), but the non-consensus play is GLD — real yield decline + central bank structural bid. Short KBE unless curve re-steepens above +20bp. Watch the March 19 FOMC for the pivot signal.
 >

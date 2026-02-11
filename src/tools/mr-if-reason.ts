@@ -1380,7 +1380,7 @@ function getQuantAnchors(eventTypes: string[]): QuantAnchor[] {
 export function registerMrIfReason(server: McpServer): void {
   server.tool(
     "mr_if_reason",
-    `Mr.IF financial reasoning engine v4.2. Handles TWO types of input:
+    `Mr.IF financial reasoning engine v4.3. Handles TWO types of input:
 1) Daily-life events ("everyone's sick", "it's getting cold") → butterfly-effect cross-domain reasoning
 2) Financial events ("yield curve inverted", "NVDA earnings beat", "oil price crashed") → financial-transmission channel mapping (sector rotation, earnings read-through, macro repricing, contagion, FX pass-through)
 Returns: event classification, chain templates WITH pre-scores (0-100) and ticker seeds, event interaction effects, enhanced historical precedents, structured quantitative anchors, discipline knowledge, and complexity-based reasoning depth recommendation.
@@ -1643,7 +1643,7 @@ After all narrative blocks, present the structured data:
 - **Key Catalysts** — with specific dates (not "EIA report" but "EIA nat gas storage (Thu Feb 13, 10:30 ET)")
 - **Key Sensitivity** — the single variable this thesis hinges on
 - **Kill Condition** — specific, falsifiable thresholds, mapped to logic blocks
-- **Base Rate** — concrete historical precedent with year, numbers, and tickers (e.g., "Post-inversion 12mo avg: Financials -15%, Utilities +10%"). Include 1-3 specific dated cases.
+- **Base Rate** — concrete historical precedent with year, numbers, and tickers (e.g., "Post-inversion 12mo avg: Financials -15%, Utilities +10%"). Include 1-3 specific dated cases. **Anchor your Probability here**: show derivation trail (base rate prior → signal adjustments → final %).
 - **Net-net** — ONE closing sentence: highest conviction + non-consensus play + key trigger + walk-away condition. Closes the loop opened by the Bottom Line.
 - **Disclaimer** — 1-2 sentences
 
